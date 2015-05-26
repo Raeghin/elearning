@@ -1,0 +1,13 @@
+<?php
+
+defined('MOODLE_INTERNAL') || die();
+
+$plugin->version = 0.0003;
+$plugin->release = 'v0.1.20150526';
+$plugin->requires = 2014051200;
+$plugin->maturity = MATURITY_ALPHA;
+$plugin->cron = 0;
+$plugin->componend = 'local_buycredits';
+$plugin->dependencies = array(
+    'jquery' => ANY_VERSION,   // The Foo activity must be present (any version).
+);
