@@ -12,6 +12,6 @@
 		'user' => $USER
 	));
 	
-	$gdscredit->controller('index/paymentsuccess', 'credit')
+	$gdscredit->controller('index/paymenterror', 'credit')
 			->run();
 	

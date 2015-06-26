@@ -33,7 +33,7 @@ class gds_credit
     public function controller($request, $modelname)
     {
         $requestparts = explode('/', $request);
-
+		
         // load controller abstract and find the requested controller
         $this->load_file('lib/controller.php');
         if (!$this->load_file('controllers/' . $requestparts[0] . '.php', true)) {

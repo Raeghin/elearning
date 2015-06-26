@@ -44,7 +44,7 @@
 		<form action="<?php echo $this->model->getpaymentlink(); ?>" method="POST">
 			<p><?php echo $this->get_string('buycreditexplanation'); ?>.</p>
 			<div><p><?php echo $this->get_string('labelcreditamount'); ?>: <input type="text" name="amount_credits" size="5"/> <img src="assets/img/refresh.png" height="18px" onclick="refreshprice()"></p></div>
-			<p><b><?php echo $this->get_string('totalprice'); ?>:</b> â‚¬ <span id="totalprice">0</span>,-</p>
+			<p><b><?php echo $this->get_string('totalprice'); ?>:</b> € <span id="totalprice">0</span>,-</p>
 			<p><?php echo $this->get_string('idealpayment'); ?>.</p>
 			
 			<?php echo $this->model->getissueroptions(); ?>

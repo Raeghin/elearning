@@ -12,5 +12,5 @@
 		'user' => $USER
 	));
 	
-	$gdscredit->controller(optional_param('action', 'index', PARAM_SAFEPATH), 'credit')
-              ->run();
+	$gdscredit->controller('index', 'credit')
+			->run();

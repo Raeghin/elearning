@@ -1,6 +1,6 @@
 <?php
 
-function local_buycredits_extends_settings_navigation($navigation, $context) {
+function local_buycredits_extend_settings_navigation($navigation, $context) {
 	
 	if (!has_capability('local/buycredits:view', context_system::instance())) {
         return;

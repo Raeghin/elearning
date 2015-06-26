@@ -8,6 +8,3 @@ $plugin->requires = 2014051200;
 $plugin->maturity = MATURITY_ALPHA;
 $plugin->cron = 0;
 $plugin->componend = 'local_buycredits';
-$plugin->dependencies = array(
-    'jquery' => ANY_VERSION,   // The Foo activity must be present (any version).
-);

@@ -27,6 +27,8 @@ $msp->transaction['id']            = $transactionid;
 // returns the status
 $status = $msp->getStatus();
 
+echo $status;
+
 if ($msp->error && !$initial){ // only show error if we dont need to display the link
   echo "Error " . $msp->error_code . ": " . $msp->error;
   exit();

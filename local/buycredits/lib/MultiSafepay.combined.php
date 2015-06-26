@@ -631,7 +631,7 @@ class MultiSafepay {
 												  <signature>' .          $this->xmlEscape($this->signature) 						. '</signature>
 												</directtransaction>';
 		
-		print($request);
+		
 		return $request;
 	}
 	
