@@ -4058,6 +4058,13 @@ function xmldb_main_upgrade($oldversion) {
     // Moodle v2.8.0 release upgrade line.
     // Put any upgrade step following this.
 
+    if ($oldversion < 2014111000.00) {
+        // Coming from 2.7 or older, we need to flag the step minmaxgrade to be ignored.
+        set_config('upgrade_minmaxgradestepignored', 1);
+
+        // Main savepoint reached.
+        upgrade_main_savepoint(true, 2014111000.00);
+    }
 
     if ($oldversion < 2014120100.00) {
 
@@ -4308,7 +4315,7 @@ function xmldb_main_upgrade($oldversion) {
         // Add "My grades" to the user menu.
         $oldconfig = get_config('core', 'customusermenuitems');
         if (strpos("mygrades,grades|/grade/report/mygrades.php|grades", $oldconfig) === false) {
-            $newconfig = "mygrades,grades|/grade/report/mygrades.php|grades\n" . $CFG->customusermenuitems;
+            $newconfig = "mygrades,grades|/grade/report/mygrades.php|grades\n" . $oldconfig;
             set_config('customusermenuitems', $newconfig);
         }
 
@@ -4377,6 +4384,39 @@ function xmldb_main_upgrade($oldversion) {
 
     // Moodle v2.9.0 release upgrade line.
     // Put any upgrade step following this.
+
+    if ($oldversion < 2015051100.05) {
+
+        // Sites that were upgrading from 2.7 and older will ignore this step.
+        if (empty($CFG->upgrade_minmaxgradestepignored)) {
+            upgrade_minmaxgrade();
+
+            // Flags this upgrade step as already run to prevent it from running multiple times.
+            set_config('upgrade_minmaxgradestepignored', 1);
+        }
+
+        upgrade_main_savepoint(true, 2015051100.05);
+    }
+
+    if ($oldversion < 2015051100.08) {
+        // MDL-49257. Changed the algorithm of calculating automatic weights of extra credit items.
+
+        // Before the change, in case when grade category (in "Natural" agg. method) had items with
+        // overridden weights, the automatic weight of extra credit items was illogical.
+        // In order to prevent grades changes after the upgrade we need to freeze gradebook calculation
+        // for the affected courses.
+
+        // This script in included in each major version upgrade process so make sure we don't run it twice.
+        if (empty($CFG->upgrade_extracreditweightsstepignored)) {
+            upgrade_extra_credit_weightoverride();
+
+            // To skip running the same script on the upgrade to the next major release.
+            set_config('upgrade_extracreditweightsstepignored', 1);
+        }
+
+        // Main savepoint reached.
+        upgrade_main_savepoint(true, 2015051100.08);
+    }
 
     return true;
 }

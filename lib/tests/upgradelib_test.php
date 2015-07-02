@@ -353,4 +353,196 @@ class core_upgradelib_testcase extends advanced_testcase {
                     (object)array('userfield' => 'email', 'shortname' => null, 'operator' => 'isempty'),
                 )));
     }
+
+    /**
+     * Test upgrade minmaxgrade step.
+     */
+    public function test_upgrade_minmaxgrade() {
+        global $CFG, $DB;
+        require_once($CFG->libdir . '/gradelib.php');
+        $initialminmax = $CFG->grade_minmaxtouse;
+        $this->resetAfterTest();
+
+        $c1 = $this->getDataGenerator()->create_course();
+        $c2 = $this->getDataGenerator()->create_course();
+        $c3 = $this->getDataGenerator()->create_course();
+        $u1 = $this->getDataGenerator()->create_user();
+        $a1 = $this->getDataGenerator()->create_module('assign', array('course' => $c1, 'grade' => 100));
+        $a2 = $this->getDataGenerator()->create_module('assign', array('course' => $c2, 'grade' => 100));
+        $a3 = $this->getDataGenerator()->create_module('assign', array('course' => $c3, 'grade' => 100));
+
+        $cm1 = get_coursemodule_from_instance('assign', $a1->id);
+        $ctx1 = context_module::instance($cm1->id);
+        $assign1 = new assign($ctx1, $cm1, $c1);
+
+        $cm2 = get_coursemodule_from_instance('assign', $a2->id);
+        $ctx2 = context_module::instance($cm2->id);
+        $assign2 = new assign($ctx2, $cm2, $c2);
+
+        $cm3 = get_coursemodule_from_instance('assign', $a3->id);
+        $ctx3 = context_module::instance($cm3->id);
+        $assign3 = new assign($ctx3, $cm3, $c3);
+
+        // Give a grade to the student.
+        $ug = $assign1->get_user_grade($u1->id, true);
+        $ug->grade = 10;
+        $assign1->update_grade($ug);
+
+        $ug = $assign2->get_user_grade($u1->id, true);
+        $ug->grade = 20;
+        $assign2->update_grade($ug);
+
+        $ug = $assign3->get_user_grade($u1->id, true);
+        $ug->grade = 30;
+        $assign3->update_grade($ug);
+
+
+        // Run the upgrade.
+        upgrade_minmaxgrade();
+
+        // Nothing has happened.
+        $this->assertFalse($DB->record_exists('config', array('name' => 'show_min_max_grades_changed_' . $c1->id)));
+        $this->assertSame(false, grade_get_setting($c1->id, 'minmaxtouse', false, true));
+        $this->assertFalse($DB->record_exists('grade_items', array('needsupdate' => 1, 'courseid' => $c1->id)));
+        $this->assertFalse($DB->record_exists('config', array('name' => 'show_min_max_grades_changed_' . $c2->id)));
+        $this->assertSame(false, grade_get_setting($c2->id, 'minmaxtouse', false, true));
+        $this->assertFalse($DB->record_exists('grade_items', array('needsupdate' => 1, 'courseid' => $c2->id)));
+        $this->assertFalse($DB->record_exists('config', array('name' => 'show_min_max_grades_changed_' . $c3->id)));
+        $this->assertSame(false, grade_get_setting($c3->id, 'minmaxtouse', false, true));
+        $this->assertFalse($DB->record_exists('grade_items', array('needsupdate' => 1, 'courseid' => $c3->id)));
+
+        // Create inconsistency in c1 and c2.
+        $giparams = array('itemtype' => 'mod', 'itemmodule' => 'assign', 'iteminstance' => $a1->id,
+                'courseid' => $c1->id, 'itemnumber' => 0);
+        $gi = grade_item::fetch($giparams);
+        $gi->grademin = 5;
+        $gi->update();
+
+        $giparams = array('itemtype' => 'mod', 'itemmodule' => 'assign', 'iteminstance' => $a2->id,
+                'courseid' => $c2->id, 'itemnumber' => 0);
+        $gi = grade_item::fetch($giparams);
+        $gi->grademax = 50;
+        $gi->update();
+
+
+        // C1 and C2 should be updated, but the course setting should not be set.
+        $CFG->grade_minmaxtouse = GRADE_MIN_MAX_FROM_GRADE_GRADE;
+
+        // Run the upgrade.
+        upgrade_minmaxgrade();
+
+        // C1 and C2 were partially updated.
+        $this->assertTrue($DB->record_exists('config', array('name' => 'show_min_max_grades_changed_' . $c1->id)));
+        $this->assertSame(false, grade_get_setting($c1->id, 'minmaxtouse', false, true));
+        $this->assertTrue($DB->record_exists('grade_items', array('needsupdate' => 1, 'courseid' => $c1->id)));
+        $this->assertTrue($DB->record_exists('config', array('name' => 'show_min_max_grades_changed_' . $c2->id)));
+        $this->assertSame(false, grade_get_setting($c2->id, 'minmaxtouse', false, true));
+        $this->assertTrue($DB->record_exists('grade_items', array('needsupdate' => 1, 'courseid' => $c2->id)));
+
+        // Nothing has happened for C3.
+        $this->assertFalse($DB->record_exists('config', array('name' => 'show_min_max_grades_changed_' . $c3->id)));
+        $this->assertSame(false, grade_get_setting($c3->id, 'minmaxtouse', false, true));
+        $this->assertFalse($DB->record_exists('grade_items', array('needsupdate' => 1, 'courseid' => $c3->id)));
+
+
+        // Course setting should not be set on a course that has the setting already.
+        $CFG->grade_minmaxtouse = GRADE_MIN_MAX_FROM_GRADE_ITEM;
+        grade_set_setting($c1->id, 'minmaxtouse', -1); // Sets different value than constant to check that it remained the same.
+
+        // Run the upgrade.
+        upgrade_minmaxgrade();
+
+        // C2 was updated.
+        $this->assertSame((string) GRADE_MIN_MAX_FROM_GRADE_GRADE, grade_get_setting($c2->id, 'minmaxtouse', false, true));
+
+        // Nothing has happened for C1.
+        $this->assertSame('-1', grade_get_setting($c1->id, 'minmaxtouse', false, true));
+
+        // Nothing has happened for C3.
+        $this->assertFalse($DB->record_exists('config', array('name' => 'show_min_max_grades_changed_' . $c3->id)));
+        $this->assertSame(false, grade_get_setting($c3->id, 'minmaxtouse', false, true));
+        $this->assertFalse($DB->record_exists('grade_items', array('needsupdate' => 1, 'courseid' => $c3->id)));
+
+
+        // Final check, this time we'll unset the default config.
+        unset($CFG->grade_minmaxtouse);
+        grade_set_setting($c1->id, 'minmaxtouse', null);
+
+        // Run the upgrade.
+        upgrade_minmaxgrade();
+
+        // C1 was updated.
+        $this->assertSame((string) GRADE_MIN_MAX_FROM_GRADE_GRADE, grade_get_setting($c1->id, 'minmaxtouse', false, true));
+
+        // Nothing has happened for C3.
+        $this->assertFalse($DB->record_exists('config', array('name' => 'show_min_max_grades_changed_' . $c3->id)));
+        $this->assertSame(false, grade_get_setting($c3->id, 'minmaxtouse', false, true));
+        $this->assertFalse($DB->record_exists('grade_items', array('needsupdate' => 1, 'courseid' => $c3->id)));
+
+        // Restore value.
+        $CFG->grade_minmaxtouse = $initialminmax;
+    }
+
+    public function test_upgrade_extra_credit_weightoverride() {
+        global $DB, $CFG;
+
+        $this->resetAfterTest(true);
+
+        $c = array();
+        $a = array();
+        $gi = array();
+        for ($i=0; $i<5; $i++) {
+            $c[$i] = $this->getDataGenerator()->create_course();
+            $a[$i] = array();
+            $gi[$i] = array();
+            for ($j=0;$j<3;$j++) {
+                $a[$i][$j] = $this->getDataGenerator()->create_module('assign', array('course' => $c[$i], 'grade' => 100));
+                $giparams = array('itemtype' => 'mod', 'itemmodule' => 'assign', 'iteminstance' => $a[$i][$j]->id,
+                    'courseid' => $c[$i]->id, 'itemnumber' => 0);
+                $gi[$i][$j] = grade_item::fetch($giparams);
+            }
+        }
+
+        // Case 1: Course $c[0] has aggregation method different from natural.
+        $coursecategory = grade_category::fetch_course_category($c[0]->id);
+        $coursecategory->aggregation = GRADE_AGGREGATE_WEIGHTED_MEAN;
+        $coursecategory->update();
+        $gi[0][1]->aggregationcoef = 1;
+        $gi[0][1]->update();
+        $gi[0][2]->weightoverride = 1;
+        $gi[0][2]->update();
+
+        // Case 2: Course $c[1] has neither extra credits nor overrides
+
+        // Case 3: Course $c[2] has extra credits but no overrides
+        $gi[2][1]->aggregationcoef = 1;
+        $gi[2][1]->update();
+
+        // Case 4: Course $c[3] has no extra credits and has overrides
+        $gi[3][2]->weightoverride = 1;
+        $gi[3][2]->update();
+
+        // Case 5: Course $c[4] has both extra credits and overrides
+        $gi[4][1]->aggregationcoef = 1;
+        $gi[4][1]->update();
+        $gi[4][2]->weightoverride = 1;
+        $gi[4][2]->update();
+
+        // Run the upgrade script and make sure only course $c[4] was marked as needed to be fixed.
+        upgrade_extra_credit_weightoverride();
+
+        $this->assertTrue(empty($CFG->{'gradebook_calculations_freeze_' . $c[0]->id}));
+        $this->assertTrue(empty($CFG->{'gradebook_calculations_freeze_' . $c[1]->id}));
+        $this->assertTrue(empty($CFG->{'gradebook_calculations_freeze_' . $c[2]->id}));
+        $this->assertTrue(empty($CFG->{'gradebook_calculations_freeze_' . $c[3]->id}));
+        $this->assertEquals(20150619, $CFG->{'gradebook_calculations_freeze_' . $c[4]->id});
+
+        set_config('gradebook_calculations_freeze_' . $c[4]->id, null);
+
+        // Run the upgrade script for a single course only.
+        upgrade_extra_credit_weightoverride($c[0]->id);
+        $this->assertTrue(empty($CFG->{'gradebook_calculations_freeze_' . $c[0]->id}));
+        upgrade_extra_credit_weightoverride($c[4]->id);
+        $this->assertEquals(20150619, $CFG->{'gradebook_calculations_freeze_' . $c[4]->id});
+    }
 }
