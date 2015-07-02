@@ -23,6 +23,7 @@
  * @copyright  1999 onwards Martin Dougiamas  http://dougiamas.com
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+$themegiven = $_GET["template"];
 
 require('../config.php');
 require_once('lib.php');
@@ -200,7 +201,7 @@ if ($frm and isset($frm->username)) {                             // Login WITH 
             set_moodle_cookie($USER->username);
         }
 
-        $urltogo = core_login_get_return_url();
+        $urltogo = core_login_get_return_url() . '?theme=' . $themegiven;
 
     /// check if user password has expired
     /// Currently supported only for ldap-authentication module
