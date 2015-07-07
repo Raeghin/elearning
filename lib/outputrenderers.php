@@ -2053,7 +2053,8 @@ class core_renderer extends renderer_base {
      * @return string
      */
     public function doc_link($path, $text = '', $forcepopup = false) {
-        global $CFG;
+        return '';
+		/**global $CFG;
 
         $icon = $this->pix_icon('docs', '', 'moodle', array('class'=>'iconhelp icon-pre', 'role'=>'presentation'));
 
@@ -2065,6 +2066,7 @@ class core_renderer extends renderer_base {
         }
 
         return html_writer::tag('a', $icon.$text, $attributes);
+		*/
     }
 
     /**
