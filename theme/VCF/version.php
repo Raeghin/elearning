@@ -15,21 +15,20 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Language file.
+ * Easy.
  *
- * @package   theme_easy
- * @copyright 2013 Frédéric Massart
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    theme_easy
+ * @copyright  2013 Frédéric Massart
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-// Message displayed to the user when they choose this theme.
-$string['choosereadme'] = 'vlot';
-
-// Human readable name of the plugin.
-$string['pluginname'] = 'vlot';
-
-// Human readable name of the block regions.
-$string['region-side-post'] = 'Right';
-$string['region-side-pre'] = 'Left';
+$plugin->version   = 2014122400;
+$plugin->requires  = 2013050100;
+$plugin->component = 'theme_vcf';
+$plugin->release   = '1.1';
+$plugin->maturity  = MATURITY_STABLE;
+$plugin->dependencies = array(
+    'theme_bootstrapbase'  => 2013050100,
+);

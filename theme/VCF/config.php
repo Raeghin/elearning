@@ -27,7 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * The name of your theme.
  */
-$THEME->name = 'vlot';
+$THEME->name = 'vcf';
 
 /**
  * The list of CSS files (without the .css) to automatically load.
