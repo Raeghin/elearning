@@ -25,10 +25,10 @@
 defined('MOODLE_INTERNAL') || die();
 
 // Message displayed to the user when they choose this theme.
-$string['choosereadme'] = 'vcf';
+$string['choosereadme'] = 'thinq';
 
 // Human readable name of the plugin.
-$string['pluginname'] = 'vcf';
+$string['pluginname'] = 'thinq';
 
 // Human readable name of the block regions.
 $string['region-side-post'] = 'Right';

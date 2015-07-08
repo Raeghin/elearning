@@ -26,7 +26,7 @@ defined('MOODLE_INTERNAL') || die();
 
 $plugin->version   = 2014122400;
 $plugin->requires  = 2013050100;
-$plugin->component = 'theme_vcf';
+$plugin->component = 'theme_thinq';
 $plugin->release   = '1.1';
 $plugin->maturity  = MATURITY_STABLE;
 $plugin->dependencies = array(

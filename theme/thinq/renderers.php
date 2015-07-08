@@ -28,7 +28,7 @@ defined('MOODLE_INTERNAL') || die();
  * Class extending the core renderers of theme/bootstrapbase.
  */
 require_once($CFG->dirroot . '/theme/bootstrapbase/renderers.php');
-class theme_vcf_core_renderer extends theme_bootstrapbase_core_renderer {
+class theme_thinq_core_renderer extends theme_bootstrapbase_core_renderer {
 
     // Re-declare in here the methods contained in the class core_renderer (see lib/outputrenderers.php),
     // to modify them. Please note that some might already be overridden in the direct parent of this
