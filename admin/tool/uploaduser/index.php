@@ -1025,13 +1025,7 @@ if ($formdata = $mform2->is_cancelled()) {
                             debugging('Unknown enrolment status.');
                         }
                     }
-					
-					if (!empty($user->{'enroldate'.$i})) {
-						$enroldate = $user->{'enroldate'.$i};
-						$today = strtotime($enroldate);
-						$today = make_timestamp(date('Y', $today), date('m', $today), date('d', $today), 0, 0, 0);
-					}
-					
+
                     if (!empty($user->{'enrolperiod'.$i})) {
                         $duration = (int)$user->{'enrolperiod'.$i} * 60*60*24; // convert days to seconds
                         if ($duration > 0) { // sanity check
