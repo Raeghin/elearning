@@ -1,0 +1,183 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<link href="pix/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />		
+		<title>VCF eLearning</title>
+		
+		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3/jquery.js"></script>
+		
+		<style type="text/css">
+			* {
+				font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+			}
+			
+			body {
+				margin: 0;
+				pading: 0;
+				color: #fff;
+				background: #1b1b1b;
+				font-size: 14px;
+				text-shadow: #050505 0 -1px 0;
+				font-weight: bold;
+				height: 100%;
+				overflow: hidden;
+			}
+			
+			li {
+				list-style: none;
+			}
+			
+			#dummy {
+				position: absolute;
+				top: 0;
+				left: 0;
+				border-bottom: solid 3px #05539A;
+				height: 250px;
+				width: 100%;
+				background: #fff;
+				z-index: 1;
+				
+			}
+			
+			#dummy2 {
+				position: absolute;
+				top: 0;
+				left: 0;
+				border-bottom: solid 2px #545551;
+				height: 252px;
+				width: 100%;
+				background: transparent;
+				z-index: 2;
+			}
+			
+			#dummy3 {
+				position: absolute;
+				margin-top: 252px;
+				left: 0;
+				width: 100%;
+				background-color:#E0E0E0;
+				z-index: 2;
+				height: 100%;
+			}
+			
+			#login-wrapper {
+				margin: -25px 0 0 -170px;
+				width: 400px;
+				padding: 10px;
+				text-align: center;
+				z-index: 99;
+				position: absolute;
+				top: 0;
+				left: 50%;
+				
+			}
+			
+			#login-top {
+				height: 120px;
+				padding-top: 140px;
+				text-align: center;
+				width: 100%;
+			}
+			
+			#login-content {
+				margin-top:7px;
+				padding: 10px;
+				height: 180px;
+				background-color: #000;
+				background-color: rgba(0,0,0,0.5);
+				-moz-border-bottom-left-radius: 15px;
+				-moz-border-bottom-right-radius: 15px;
+				border-bottom-left-radius: 15px;
+				border-bottom-right-radius: 15px;
+			}
+			
+			label {
+				width: 70px;
+				float: left;
+				padding: 14px;
+				line-height: 14px;
+				margin-top: -4px;
+				
+			}
+			
+			input.text-input {
+				width: 200px;
+				float: right;
+				-moz-border-radius: 4px;
+                -webkit-border-radius: 4px;
+				border-radius: 4px;
+				background: #fff;
+				border: solid 1px transparent;
+				color: #555;
+				padding: 8px;
+				font-size: 13px;
+			}
+			
+			input.button {
+				float: right;
+				padding: 6px 10px;
+				color: #fff;
+				font-size: 14px;
+				background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#a4d04a), to(#459300));
+				text-shadow: #050505 0 -1px 0;
+				background-color: #459300;
+				-moz-border-radius: 4px;
+                -webkit-border-radius: 4px;
+				border-radius: 4px;
+				border: solid 1px transparent;
+				font-weight: bold;
+				cursor: pointer;
+				letter-spacing: 1px;
+			}
+			
+			input.button:hover {
+				background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#a4d04a), to(#a4d04a), color-stop(80%, #76b226));
+				text-shadow: #050505 0 -1px 2px;
+				background-color: #a4d04a;
+				color: #fff;
+			}
+			
+			div.error {
+				padding: 8px;
+				background: rgba(52, 4, 0, 0.4);
+				-moz-border-radius: 8px;
+                -webkit-border-radius: 8px;
+				border-radius: 8px;
+				border: solid 1px transparent;
+				margin: 6px 0;
+			}
+		</style>		
+	</head>
+  
+	<body id="login">
+		
+		<div id="login-wrapper" class="png_bg">
+			<div id="login-top">
+				<img src="pix/logo.png" alt="VCF" title="VCF eLearning, powered by GDS Cross Media Group" height="100%"/>			
+			</div>
+			
+			<div id="login-content">
+				<form method="post" action="http://www.gdselearning.nl/login/index.php?theme=vcf" id="login">
+					<p>
+						<label>Username:</label>
+						<input value="" name="username" class="text-input" type="text" />
+					</p>
+					<br style="clear: both;" />
+					<p>
+						<label>Password:</label>
+						<input name="password" class="text-input" type="password" />
+					</p>
+					<br style="clear: both;" />
+					<p>
+						<input class="button" type="submit" value="Inloggen" />
+					</p>
+					
+				</form>
+			</div>
+		</div>
+		<div id="dummy"></div>
+		<div id="dummy2"></div>
+		<div id="dummy3"><img src="pix/background.jpg" alt="VCF" width="100%" title="VCF eLearning, powered by GDS Cross Media Group"/>			</div>
+  </body>
+</html>

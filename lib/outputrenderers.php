@@ -827,15 +827,11 @@ class core_renderer extends renderer_base {
 
         if ($this->page->pagetype == 'site-index') {
             // Special case for site home page - please do not remove
-            return '<div class="sitelink">' .
-                   '<a title="Moodle" href="http://moodle.org/">' .
-                   '<img src="' . $this->pix_url('moodlelogo') . '" alt="moodlelogo" /></a></div>';
+            return '';
 
         } else if (!empty($CFG->target_release) && $CFG->target_release != $CFG->release) {
             // Special case for during install/upgrade.
-            return '<div class="sitelink">'.
-                   '<a title="Moodle" href="http://docs.moodle.org/en/Administrator_documentation" onclick="this.target=\'_blank\'">' .
-                   '<img src="' . $this->pix_url('moodlelogo') . '" alt="moodlelogo" /></a></div>';
+            return '';
 
         } else if ($this->page->course->id == $SITE->id || strpos($this->page->pagetype, 'course-view') === 0) {
             return '<div class="homelink"><a href="' . $CFG->wwwroot . '/">' .
@@ -2057,7 +2053,8 @@ class core_renderer extends renderer_base {
      * @return string
      */
     public function doc_link($path, $text = '', $forcepopup = false) {
-        global $CFG;
+        return '';
+		/**global $CFG;
 
         $icon = $this->pix_icon('docs', '', 'moodle', array('class'=>'iconhelp icon-pre', 'role'=>'presentation'));
 
@@ -2069,6 +2066,7 @@ class core_renderer extends renderer_base {
         }
 
         return html_writer::tag('a', $icon.$text, $attributes);
+		*/
     }
 
     /**
