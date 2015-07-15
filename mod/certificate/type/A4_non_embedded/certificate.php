@@ -82,7 +82,7 @@ $pdf->SetAlpha(0.2);
 certificate_print_image($pdf, $certificate, CERT_IMAGE_WATERMARK, $wmarkx, $wmarky, $wmarkw, $wmarkh);
 $pdf->SetAlpha(1);
 certificate_print_image($pdf, $certificate, CERT_IMAGE_SEAL, $sealx, $sealy, '', '');
-certificate_print_image($pdf, $certificate, CERT_IMAGE_SIGNATURE, $sigx, $sigy, '', '');
+certificate_print_image($pdf, $certificate, CERT_IMAGE_SIGNATURE, $sigx + 75, $sigy, '50', '');
 
 // Add text
 $pdf->SetTextColor(0, 0, 120);
@@ -98,7 +98,7 @@ certificate_print_text($pdf, $x, $y + 112, 'C', 'Times', '', 10, certificate_get
 if ($certificate->printhours) {
     certificate_print_text($pdf, $x, $y + 122, 'C', 'Times', '', 10, get_string('credithours', 'certificate') . ': ' . $certificate->printhours);
 }
-certificate_print_text($pdf, $x, $codey, 'C', 'Times', '', 10, certificate_get_code($certificate, $certrecord));
+certificate_print_text($pdf, $x + 180, $codey + 12, 'C', 'Times', '', 7, 'Unieke code: ' . certificate_get_code($certificate, $certrecord));
 $i = 0;
 if ($certificate->printteacher) {
     $context = context_module::instance($cm->id);
