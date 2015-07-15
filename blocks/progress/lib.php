@@ -1102,7 +1102,7 @@ function block_progress_filter_visibility($events, $userid, $coursecontext, $cou
         return 0;
     }
     if ($events === null) {
-        return null;
+        return null; 
     }
 
     // Keep only events that are visible.
@@ -1118,18 +1118,18 @@ function block_progress_filter_visibility($events, $userid, $coursecontext, $cou
 
         // Check visibility in course.
         if (!$coursemodule->visible && !has_capability('moodle/course:viewhiddenactivities', $coursecontext, $userid)) {
-            continue;
+           continue;
         }
 
         // Check availability, allowing for visible, but not accessible items.
-        if (!empty($CFG->enableavailability)) {
-            if (
-                isset($coursemodule->available) && !$coursemodule->available && empty($coursemodule->availableinfo) &&
-                !has_capability('moodle/course:viewhiddenactivities', $coursecontext, $userid)
-            ) {
-                continue;
-            }
-        }
+        //if (!empty($CFG->enableavailability)) {
+        //    if (
+        //        isset($coursemodule->available) && !$coursemodule->available && empty($coursemodule->availableinfo) &&
+        //        !has_capability('moodle/course:viewhiddenactivities', $coursecontext, $userid)
+        //    ) {
+        //        continue;
+        //    }
+       // }
         // Check visibility by grouping constraints (includes capability check).
         if (!empty($CFG->enablegroupmembersonly)) {
             if (isset($coursemodule->uservisible)) {
