@@ -1,0 +1,21 @@
+<?php
+$string['pluginname'] = 'Buy Credits';
+$string['buycredits:view'] = 'Aankopen leerlingen enabelen.';
+$string['buycredits'] = 'Credits aanschaffen';
+$string['assigncredits'] = 'Users aanmaken';
+$string['creditsoverview'] = 'Credits geschiedenis';
+$string['credits'] = 'credits';
+$string['creditamount'] = 'Huidige credit balans';
+$string['titlecreditoverview'] = 'Credit overzicht';
+$string['titlebuycredits'] = 'Credits aanschaffen';
+$string['labelcreditamount'] = 'Gewenst aantal credits';
+$string['creditsbought'] = 'credits gekocht';
+$string['creditsspent'] = 'credits gebruikt';
+$string['buycreditexplanation'] = 'Hier kunt u credits aanschaffen waarmee u leerlingen kunt toevoegen aan uw cursussen. Elke leerling kost 1 credit. Credit\'s kosten € 35 per stuk';
+$string['totalprice'] = 'Totaal prijs (ex. btw)';
+$string['idealpayment'] = 'U kunt uw credits afrekenen met iDeal. Na betaling worden de credits direct op uw account bijgeschreven.';
+$string['titlecrediterror'] = 'Oeps';
+$string['crediterror'] = 'Er is iets mis gegaan met uw betaling.';
+$string['tryagain'] = 'Probeer het opnieuw.';
+$string['titlecreditsuccess'] = 'Betaling succesvol';
+$string['titlecreditsuccess'] = 'Uw betaling is succesvol ontvangen. Uw credits zijn toegevoegd aan uw account!';
