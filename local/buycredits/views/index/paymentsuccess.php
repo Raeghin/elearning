@@ -1,8 +1,5 @@
 <?php
 
-include('MultiSafepay.combined.php');
-include('MultiSafepay.config.php');
-
 $msp = new MultiSafepay();
 
 /* 
@@ -15,7 +12,8 @@ $msp->merchant['site_code']        = MSP_SITE_CODE;
 $msp->transaction['id']			   = $_GET['transactionid'];
 
 $status = $msp->getStatus();
-
+print_r($status);
+print_r($msp);
 ?>
 
 <div class="creditbody">  

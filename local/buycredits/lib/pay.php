@@ -35,9 +35,10 @@ $msp->parseCustomerAddress($_POST["address"]);
  */
 $msp->transaction['id']            = $POST["uid"] . date("dmdYGiB", time());// generally the shop's order ID is used here
 $msp->transaction['currency']      = 'EUR';
+
 $msp->transaction['amount']        = $price; // cents
 $msp->transaction['description']   = 'Order #' . $msp->transaction['id'];
-$msp->transaction['items']         = $POST['amount_credits'] . 'Credits';
+$msp->transaction['items']         = $_POST['creditamount'];
 $msp->transaction['gateway']		= $_POST['gateway'];
 
 
@@ -50,5 +51,4 @@ if ($msp->error){
 }
 
 header('Location: ' . $url);
-
 ?>

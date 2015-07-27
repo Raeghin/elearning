@@ -1,15 +1,19 @@
 <script src="assets/js/jquery.min.js"></script>
 <script>
+	$( document ).ready(function() {
+		refreshprice();
+	});
+
 	$(function() {
 		
-		$("input[name='amount_credits']").keyup(function() {
+		$("input[name='creditamount']").keyup(function() {
 			refreshprice();
 		});
 	});
 	
 	function refreshprice() 
 	{
-		var amount = $("input[name='amount_credits']").val();
+		var amount = $("input[name='creditamount']").val();
 		var price = parseInt(amount) * 35;
 	
 		$("input[name='price']").val(price);    
@@ -43,7 +47,7 @@
 		
 		<form action="<?php echo $this->model->getpaymentlink(); ?>" method="POST">
 			<p><?php echo $this->get_string('buycreditexplanation'); ?>.</p>
-			<div><p><?php echo $this->get_string('labelcreditamount'); ?>: <input type="text" name="amount_credits" size="5"/> <img src="assets/img/refresh.png" height="18px" onclick="refreshprice()"></p></div>
+			<div><p><?php echo $this->get_string('labelcreditamount'); ?>:  <input type="text" name="creditamount" size="5" value="10"/><img src="assets/img/refresh.png" height="18px" onclick="refreshprice()"></p></div>
 			<p><b><?php echo $this->get_string('totalprice'); ?>:</b> € <span id="totalprice">0</span>,-</p>
 			<p><?php echo $this->get_string('idealpayment'); ?>.</p>
 			
