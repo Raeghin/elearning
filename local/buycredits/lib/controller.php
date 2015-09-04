@@ -101,4 +101,6 @@ abstract class gds_credit_controller
     {
         return $this->gdscredit->get_user();
     }
+	
+	
 }

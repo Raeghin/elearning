@@ -124,4 +124,9 @@ class gds_credit
         $class = 'gds_credit_model_' . $name;
         return new $class($this);
     }
+	
+	function geturl($name)
+	{
+		return '/' . $name . '.php';
+	}
 }

@@ -66,8 +66,5 @@
 			<input type="submit" value="Naar iDeal" />
 		</form>
 	</div>
-	<div class="overview">
-		
-	</div>
 </div>
 

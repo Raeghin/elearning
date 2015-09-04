@@ -1,13 +1,34 @@
+@import url("http://yui.yahooapis.com/pure/0.6.0/pure-min.css");
+
 .overview{
     border-radius: 25px;
     background: #D1D1D1;
     padding: 20px;
 	margin: 20px 0 20px 0;
     width: 100%;
-    min-height: 150px;
+    min-height: 100px;
 }
 
 .title  p{
 	font-size: 14px;
 	font-weight: bold;
 }
+
+
+
+#form label {
+    color: #333;
+    
+    width: 100px;
+    margin-top: 10px;
+    margin-left: 10px;
+    text-align: left;
+    margin-right:15px;
+    float:left;
+}
+
+#form input {
+    width: 300px;
+    margin-top: 10px;
+}
+

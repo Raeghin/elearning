@@ -89,4 +89,9 @@ class gds_credit_view
     {
         return $this->gdscredit->get_config($name);
     }
+	
+	protected function geturl($name)
+	{
+		return $this->base_url('models/' . $name . '.php');
+	}
 }

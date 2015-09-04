@@ -12,8 +12,14 @@ $msp->merchant['site_code']        = MSP_SITE_CODE;
 $msp->transaction['id']			   = $_GET['transactionid'];
 
 $status = $msp->getStatus();
-print_r($status);
-print_r($msp);
+$creditsbought = $msp->details['transaction']['items'];
+$transactionid = $msp->details['transaction']['id'];
+
+
+if($status == 'completed')
+{
+	$this->model->addcredits($this->get_user()->id, $creditsbought, $transactionid);
+}
 ?>
 
 <div class="creditbody">  

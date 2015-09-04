@@ -19,19 +19,34 @@ class gds_credit_model_credit extends gds_credit_model
 		$this->msp->merchant['site_code']        = MSP_SITE_CODE;
 	}
 	
-	public function addcredits($userid, $amount)
+	public function addcredits($userid, $amount, $transactionid)
     {
-        $field = $this->db->get_record('local_usercredits', array('customer_id' => $userid));
-		
-		$record = new stdClass();
-		$record->id = $field->id;
-		$record->customer_id = $userid;
-		$record->amount = $field->amount + $amount;
-		
-		$this->db->update_record('local_usercredits', $record);
-		$this->addhistory($userid, $amount);
-		return $record->amount;
+        if(!$this->checkifcreditisalreadyadded($transactionid))
+		{
+			$field = $this->db->get_record('local_usercredits', array('customer_id' => $userid));
+			
+			$record = new stdClass();
+			$record->id = $field->id;
+			$record->customer_id = $userid;
+			$record->amount = $field->amount + $amount;
+			
+			$this->db->update_record('local_usercredits', $record);
+			$this->addhistory($userid, $amount, $transactionid);
+			return $record->amount;
+		} else {
+			$field = $this->db->get_record('local_usercredits', array('customer_id' => $userid));
+			return $field->amount;
+		}
     }
+	
+	public function checkifcreditisalreadyadded($transactionid)
+	{
+		if($this->db->count_records('local_usercreditshistory', array('transactionid' => $transactionid)) > 0)
+			return true;
+		else
+			return false;
+		
+	}
 	
     public function substractone($userid)
     {
@@ -43,12 +58,13 @@ class gds_credit_model_credit extends gds_credit_model
 		return $this->db->get_record('local_usercreditshistory', array('customer_id' => $userid));
 	}
 
-	public function addhistory($userid, $amount)
+	public function addhistory($userid, $amount,$transactionid)
 	{
 		$record = new stdClass();
 		$record->customer_id = $userid;
 		$record->amount = $amount;
 		$record->dateofpurchase = time();
+		$record->transactionid = $transactionid;
 		
 		$this->db->insert_record('local_usercreditshistory', $record);
 	}
@@ -123,7 +139,10 @@ class gds_credit_model_credit extends gds_credit_model
 	public function getcredithistorie($userid, $amount)
 	{
 		$records = $this->db->count_records('local_usercreditshistory', array('customer_id' => $userid));
+				
+		$limit = max($records - $amount, 0);
 		
-		return $this->db->get_records('local_usercreditshistory', array('customer_id' => $userid), $sort='', $fields='*', $limitfrom=$records - $amount, $limitnum=$records);
+		
+		return $this->db->get_records('local_usercreditshistory', array('customer_id' => $userid), $sort='', $fields='*', $limitfrom=$limit, $limitnum=$records);
 	}
 }
