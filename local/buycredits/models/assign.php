@@ -133,9 +133,19 @@ class gds_credit_model_assign extends gds_credit_model
 		return $this->db->get_record('user', array('id' => $userid)); 
 	}
 
-	public function getcourses() {
-		$order = 'shortname';
-		$fields = 'id, shortname, fullname';
-		return $this->db->get_recordset_select('course', null, null, $order, $fields);
+	public function getteachercourses($userid) {
+		$sql = "SELECT t_course.id, t_course.fullname, t_course.shortname " .
+			"FROM {user} t_user " .
+			"JOIN {user_enrolments} t_user_enrolments ON t_user_enrolments.userid = t_user.id " .
+			"JOIN {enrol} t_enrol ON t_enrol.id = t_user_enrolments.enrolid " .
+			"JOIN {course} t_course ON t_course.id = t_enrol.courseid ".
+			"JOIN {role_assignments} t_role_assignments ON t_role_assignments.userid = t_user.id " .
+			"JOIN {context} t_context ON (t_context.id = t_role_assignments.contextid AND t_context.instanceid = t_enrol.courseid) " .
+			"WHERE t_context.contextlevel = '50' " .
+			"AND (t_role_assignments.roleid = '3' OR t_role_assignments.roleid = '4') " .
+			"AND t_user.id = ?";
+
+		return $this->db->get_records_sql($sql, array($userid));
+
 	}
 }

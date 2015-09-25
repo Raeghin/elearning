@@ -40,3 +40,4 @@ $string['course'] = 'Course';
 $string['assignedusers'] = 'Assigned users';
 $string['timestart'] = 'Date start';
 $string['timeend'] = 'Date end';
+$string['insufficientcredits'] = 'Insufficient credits';

@@ -149,7 +149,7 @@
                 <?php
                 $count = 0;
 
-                $courselist = $this->model->getcourses();
+                $courselist = $this->model->getteachercourses($this->get_user()->id);
                 $numItems = count($courselist);
                 foreach ($courselist as $value) {
                     if ($count == 0) {

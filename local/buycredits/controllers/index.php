@@ -5,7 +5,8 @@ defined('INTERNAL_ACCESS') or die;
 class gds_credit_controller_index extends gds_credit_controller
 {
     protected $pagename = 'gdscreditmanage';
-		
+
+
 	public function index_action()
     {
         $this->model = $this->model('credit');

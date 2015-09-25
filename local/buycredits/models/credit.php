@@ -1,4 +1,5 @@
 <?php
+require_once('/../../../config.php');
 
 defined('INTERNAL_ACCESS') or die;
 
@@ -9,9 +10,10 @@ class gds_credit_model_credit extends gds_credit_model
 {
 	public $msp;
 	
-	public function __construct(gds_credit $base) {
-		parent::__construct($base);
-			
+	public function __construct() {
+		global $DB;
+		$this->db = $DB;
+
 		$this->msp = new MultiSafepay();
 		$this->msp->test                         = MSP_TEST_API;
 		$this->msp->merchant['account_id']       = MSP_ACCOUNT_ID;
@@ -52,6 +54,11 @@ class gds_credit_model_credit extends gds_credit_model
     {
         return $this->addcredits($userid, '-1');
     }
+
+	public function substractcredits($userid, $amount)
+	{
+		return $this->addcredits($userid, '-' . $amount);
+	}
 
     public function checkhistory($userid)
 	{

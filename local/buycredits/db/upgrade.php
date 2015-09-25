@@ -43,6 +43,30 @@ function xmldb_local_buycredits_upgrade($oldversion) {
         // Buycredits savepoint reached.
         upgrade_plugin_savepoint(true, 201507291341, 'local', 'buycredits');
 	}
+
+    if ($oldversion < 201509080950) {
+
+        // Define table local_createdusers to be created.
+        $table = new xmldb_table('local_courserequirements');
+
+        // Adding fields to table local_createdusers.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('course_courseid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('credits', XMLDB_TYPE_INTEGER, '3', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('days', XMLDB_TYPE_INTEGER, '3', null, XMLDB_NOTNULL, null, null);
+
+        // Adding keys to table local_createdusers.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+        $table->add_key('fk_course_courseid', XMLDB_KEY_FOREIGN, array('course_courseid'), 'course', array('id'));
+
+        // Conditionally launch create table for local_createdusers.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Buycredits savepoint reached.
+        upgrade_plugin_savepoint(true, 201509080950, 'local', 'buycredits');
+    }
 	
     return true;
 }
