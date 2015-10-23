@@ -24,9 +24,17 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+<<<<<<< HEAD:mod/certificate/classes/event/course_module_instance_list_viewed.php
 namespace mod_certificate\event;
 
 defined('MOODLE_INTERNAL') || die();
 
 class course_module_instance_list_viewed extends \core\event\course_module_instance_list_viewed {
 }
+=======
+$plugin->version   = 2015101900;
+$plugin->requires  = 2010121000;
+$plugin->maturity  = MATURITY_STABLE;
+$plugin->release   = 'Version for Moodle 2.0 onwards';
+$plugin->component = 'block_progress';
+>>>>>>> 2.9_block_progress:blocks/progress/version.php
