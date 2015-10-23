@@ -308,6 +308,7 @@ class graded_users_iterator {
                     $grades[$grade_item->id] =
                         new grade_grade(array('userid'=>$user->id, 'itemid'=>$grade_item->id), false);
                 }
+                $grades[$grade_item->id]->grade_item = $grade_item;
             }
         }
 
@@ -2884,6 +2885,12 @@ abstract class grade_helper {
 
             // Remove ones we can't see
             if (!has_capability('gradereport/'.$plugin.':view', $context)) {
+                continue;
+            }
+
+            // Singleview doesn't doesn't accomodate for all cap combos yet, so this is hardcoded..
+            if ($plugin === 'singleview' && !has_all_capabilities(array('moodle/grade:viewall',
+                    'moodle/grade:edit'), $context)) {
                 continue;
             }
 
