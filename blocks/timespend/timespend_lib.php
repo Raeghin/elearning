@@ -65,22 +65,22 @@ class block_TIMESPEND_manager {
 
                 foreach ($logs as $log) {
                     if (($log->time - $previouslogtime) > $this->limit) {
-                        $TIMESPEND += $previouslogtime - $sessionstart;
+                        $timespend += $previouslogtime - $sessionstart;
                         $sessionstart = $log->time;
                     }
                     $previouslogtime = $log->time;
                     $daysconnected[date('Y-m-d', $log->time)] = 1;
                 }
-                $TIMESPEND += $previouslogtime - $sessionstart;
+                $timespend += $previouslogtime - $sessionstart;
             } else {
-                $TIMESPEND = 0;
+                $timespend = 0;
             }
             $groups = groups_get_user_groups($this->course->id, $user->id);
             $group = !empty($groups) && !empty($groups[0]) ? $groups[0][0] : 0;
             $rows[] = (object) array(
                 'user' => $user,
                 'groupid' => $group,
-                'TIMESPENDtime' => $TIMESPEND,
+                'timespendtime' => $timespend,
                 'connectionratio' => round(count($daysconnected) / $perioddays, 2),
             );
         }
@@ -88,16 +88,16 @@ class block_TIMESPEND_manager {
         return $rows;
     }
 
-    public function download_students_TIMESPEND($rows) {
+    public function download_students_timespend($rows) {
         $groups = groups_get_all_groups($this->course->id);
 
         $headers = array(
             array(
-                get_string('sincerow', 'block_TIMESPEND'),
+                get_string('sincerow', 'block_timespend'),
                 userdate($this->mintime),
-                get_string('torow', 'block_TIMESPEND'),
+                get_string('torow', 'block_timespend'),
                 userdate($this->maxtime),
-                get_string('perioddiffrow', 'block_TIMESPEND'),
+                get_string('perioddiffrow', 'block_timespend'),
                 format_time($this->maxtime - $this->mintime),
             ),
             array(''),
@@ -105,9 +105,9 @@ class block_TIMESPEND_manager {
                 get_string('firstname'),
                 get_string('lastname'),
                 get_string('group'),
-                get_string('TIMESPENDrow', 'block_TIMESPEND') . ' (' . get_string('mins') . ')',
-                get_string('TIMESPENDrow', 'block_TIMESPEND'),
-                get_string('connectionratiorow', 'block_TIMESPEND'),
+                get_string('timespendrow', 'block_timespend') . ' (' . get_string('mins') . ')',
+                get_string('timespendrow', 'block_timespend'),
+                get_string('connectionratiorow', 'block_timespend'),
             ),
         );
 
@@ -116,7 +116,7 @@ class block_TIMESPEND_manager {
                 $row->user->firstname,
                 $row->user->lastname,
                 isset($groups[$row->groupid]) ? $groups[$row->groupid]->name : '',
-                round($row->TIMESPENDtime / MINSECS),
+                round($row->timespendtime / MINSECS),
                 block_timespend_utils::format_timespend($row->timespendtime),
                 $row->connectionratio,
             );
@@ -124,7 +124,7 @@ class block_TIMESPEND_manager {
 
         $rows = array_merge($headers, $rows);
 
-        return block_TIMESPEND_utils::generate_download("{$this->course->shortname}_timespend", $rows);
+        return block_timespend_utils::generate_download("{$this->course->shortname}_timespend", $rows);
     }
 
     public function get_user_timespend($user, $simple = false) {
@@ -135,10 +135,10 @@ class block_TIMESPEND_manager {
             'mintime' => $this->mintime,
             'maxtime' => $this->maxtime
         );
-        $logs = block_TIMESPEND_utils::get_events_select($where, $params);
+        $logs = block_timespend_utils::get_events_select($where, $params);
 
         if ($simple) {
-            // Return total TIMESPEND time in seconds
+            // Return total timespend time in seconds
             $total = 0;
 
             if ($logs) {
@@ -148,14 +148,14 @@ class block_TIMESPEND_manager {
 
                 foreach ($logs as $log) {
                     if (($log->time - $previouslogtime) > $this->limit) {
-                        $TIMESPEND = $previouslogtime - $sessionstart;
-                        $total += $TIMESPEND;
+                        $timespend = $previouslogtime - $sessionstart;
+                        $total += $timespend;
                         $sessionstart = $log->time;
                     }
                     $previouslogtime = $log->time;
                 }
-                $TIMESPEND = $previouslogtime - $sessionstart;
-                $total += $TIMESPEND;
+                $timespend = $previouslogtime - $sessionstart;
+                $total += $timespend;
             }
 
             return $total;
@@ -172,11 +172,11 @@ class block_TIMESPEND_manager {
 
                 foreach ($logs as $log) {
                     if (($log->time - $previouslogtime) > $this->limit) {
-                        $TIMESPEND = $previouslogtime - $sessionstart;
+                        $timespend = $previouslogtime - $sessionstart;
 
                         // Ignore sessions with a really short duration
-                        if ($TIMESPEND > BLOCK_TIMESPEND_IGNORE_SESSION_TIME) {
-                            $rows[] = (object) array('start_date' => $sessionstart, 'timespendtime' => $TIMESPEND, 'ips' => array_keys($ips));
+                        if ($timespend > BLOCK_TIMESPEND_IGNORE_SESSION_TIME) {
+                            $rows[] = (object) array('start_date' => $sessionstart, 'timespendtime' => $timespend, 'ips' => array_keys($ips));
                             $ips = array();
                         }
                         $sessionstart = $log->time;
@@ -185,11 +185,11 @@ class block_TIMESPEND_manager {
                     $ips[$log->ip] = true;
                 }
 
-                $TIMESPEND = $previouslogtime - $sessionstart;
+                $timespend = $previouslogtime - $sessionstart;
 
                 // Ignore sessions with a really short duration
-                if ($TIMESPEND > BLOCK_TIMESPEND_IGNORE_SESSION_TIME) {
-                    $rows[] = (object) array('start_date' => $sessionstart, 'timespendtime' => $TIMESPEND, 'ips' => array_keys($ips));
+                if ($timespend > BLOCK_TIMESPEND_IGNORE_SESSION_TIME) {
+                    $rows[] = (object) array('start_date' => $sessionstart, 'timespendtime' => $timespend, 'ips' => array_keys($ips));
                 }
             }
 
@@ -197,7 +197,7 @@ class block_TIMESPEND_manager {
         }
     }
 
-    // Downloads user TIMESPEND with passed data
+    // Downloads user timespend with passed data
     public function download_user_timespend($user) {
         $headers = array(
             array(
@@ -225,21 +225,21 @@ class block_TIMESPEND_manager {
                 $user->firstname,
                 $user->lastname,
                 userdate($row->start_date),
-                $row->TIMESPENDtime,
-                block_TIMESPEND_utils::format_timespend($row->TIMESPENDtime),
+                $row->timespendtime,
+                block_timespend_utils::format_timespend($row->timespendtime),
                 implode(', ', $row->ips),
             );
         }
 
         $rows = array_merge($headers, $rows);
 
-        return block_TIMESPEND_utils::generate_download("{$this->course->shortname}_timespend", $rows);
+        return block_timespend_utils::generate_download("{$this->course->shortname}_timespend", $rows);
     }
 
 }
 
-// Utils functions used by block TIMESPEND
-class block_TIMESPEND_utils {
+// Utils functions used by block timespend
+class block_timespend_utils {
 
     public static $LOGSTORES = array('logstore_standard', 'logstore_legacy');
 
