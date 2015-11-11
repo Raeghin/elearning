@@ -14,7 +14,10 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-$plugin->version   = 2015110300;
+$plugin->version   = 2015110600;
 $plugin->requires  = 2014051200;
 $plugin->component = 'block_timespend';
 $plugin->release   = 'initial';
+$plugin->dependencies = array(
+    'mod_certificate' => 2014041801
+);

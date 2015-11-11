@@ -4,6 +4,7 @@ global $DB, $PAGE, $OUTPUT;
 
 require_once("../../config.php");
 
+
 // Input params
 $courseid = required_param('courseid', PARAM_INT);
 $instanceid = required_param('instanceid', PARAM_INT);
@@ -48,21 +49,21 @@ require_once('timespend_form.php');
 // Load calculate params from form, request or set default values
 
 $mform = new timespend_block_selection_form($page_url, null, 'get');
-/**
+
 if ($mform->is_submitted()) {
     // Params from form post
     $formdata = $mform->get_data();
     $mintime = $formdata->mintime;
     $maxtime = $formdata->maxtime;
-    $limit = $formdata->limit;
+    $limit = optional_param('limit', BLOCK_TIMESPEND_DEFAULT_SESSION_LIMIT, PARAM_INT);
 } else {
     // Params from request or default values
-	**/
+
     $mintime = optional_param('mintime', $course->startdate, PARAM_INT);
     $maxtime = optional_param('maxtime', time(), PARAM_INT);
     $limit = optional_param('limit', BLOCK_TIMESPEND_DEFAULT_SESSION_LIMIT, PARAM_INT);
     $mform->set_data(array('mintime' => $mintime, 'maxtime' => $maxtime, 'limit' => $limit));
-//}
+}
 
 // Url with params for links inside tables
 $page_url->params(array(
@@ -147,17 +148,27 @@ switch ($action) {
 
         // Table formatting & total count
         $total_timespend = 0;
+        foreach($rows as $index => $row)
+        {
+            if($row->timespendtime == 0)
+                unset($rows[$index]);
+        }
+
         foreach ($rows as $index => $row) {
             $total_timespend += $row->timespendtime;
             $user_url = new moodle_url($page_url, array('action' => 'user', 'id' => $row->user->id));
             $group_url = new moodle_url($page_url, array('action' => 'group', 'id' => $row->groupid));
+            if($row->certificate->id > 0)
+                $certificate_url = new moodle_url($row->certificate->filelink);
+            else
+                $certificate_url = $user_url;
             $rows[$index] = array(
                 $OUTPUT->user_picture($row->user, array('courseid' => $course->id)),
                 html_writer::link($user_url, $row->user->firstname),
                 html_writer::link($user_url, $row->user->lastname),
                 html_writer::link($group_url, isset($groups[$row->groupid]) ? $groups[$row->groupid]->name : ''),
                 block_timespend_utils::format_timespend($row->timespendtime),
-                $row->connectionratio
+                html_writer::link($certificate_url, $row->certificate->id > 0 ? $row->certificate->code : get_string('nocertificate', 'block_timespend')),
             );
         }
 
@@ -168,10 +179,8 @@ switch ($action) {
         }
         $view->header[] = get_string('period', 'block_timespend', (object) array('mintime' => userdate($mintime), 'maxtime' => userdate($maxtime)));
         $view->header[] = get_string('perioddiff', 'block_timespend', format_time($maxtime - $mintime));
-        $view->header[] = get_string('totaltimespend', 'block_timespend', block_timespend_utils::format_timespend($total_timespend));
-        $view->header[] = get_string('meantimespend', 'block_timespend', block_timespend_utils::format_timespend($total_timespend / count($rows)));
 
-        $view->table->head = array('', get_string('firstname'), get_string('lastname'), get_string('group'), get_string('timespendrow', 'block_timespend'), get_string('connectionratiorow', 'block_timespend'));
+        $view->table->head = array('', get_string('firstname'), get_string('lastname'), get_string('group'), get_string('timespendrow', 'block_timespend'), get_string('certificatecode','block_timespend'));
         $view->table->data = $rows;
         break;
 }
@@ -184,14 +193,10 @@ $mform->display();
 
 echo $OUTPUT->box_start();
 
-foreach ($view->header as $header) {
-    echo $OUTPUT->heading($header, 4);
-}
+foreach ($view->header as $text) {
+    echo html_writer::tag('p', $text);
 
-// Download button
-echo html_writer::start_tag('div', array('class' => 'download-timespend'));
-echo $OUTPUT->single_button(new moodle_url($page_url, array('download' => true)), get_string('downloadexcel'), 'get');
-echo html_writer::end_tag('div');
+}
 
 // Format table headers if they exists
 if (!empty($view->table->head)) {
@@ -203,7 +208,15 @@ if (!empty($view->table->head)) {
     }
     $view->table->head = $headers;
 }
+
+echo html_writer::tag('br', '');
 echo html_writer::table($view->table);
+
+// Download button
+echo html_writer::tag('br', '');
+echo html_writer::start_tag('div', array('class' => 'download-timespend'));
+echo $OUTPUT->single_button(new moodle_url($page_url, array('download' => true)), get_string('downloadexcel'), 'get');
+echo html_writer::end_tag('div');
 
 // END PAGE
 echo $OUTPUT->box_end();

@@ -74,3 +74,5 @@ $string['timespendgroup'] = 'All group <em>{$a}</em> members timespend. Choose a
 $string['usertimespend'] = 'Detailed course timespend of <em>{$a}</em>.';
 $string['sessionstart'] = 'Session start';
 $string['sessionduration'] = 'Duration';
+$string['nocertificate'] = 'Not yet received';
+$string['certificatecode'] = 'Certificate code';

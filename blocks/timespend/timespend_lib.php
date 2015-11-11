@@ -21,6 +21,11 @@ define('BLOCK_TIMESPEND_IGNORE_SESSION_TIME', 59);
 // Default regeneration time in seconds
 define('BLOCK_TIMESPEND_DEFAULT_REGEN_TIME', 60 * 15);
 
+global $CFG, $DB;
+require_once($CFG->dirroot . '/mod/certificate/lib.php');
+require_once($CFG->dirroot.'/mod/certificate/locallib.php');
+
+
 // Generate TIMESPEND reports based in passed params
 class block_TIMESPEND_manager {
 
@@ -52,15 +57,17 @@ class block_TIMESPEND_manager {
         $perioddays = ($this->maxtime - $this->mintime) / DAYSECS;
 
         foreach ($students as $user) {
+            $certificate = $this->getcertificatecode($this->course->id, $user->id);
+
             $daysconnected = array();
             $params['userid'] = $user->id;
             $logs = block_timespend_utils::get_events_select($where, $params);
-
+            $timespend = 0;
             if ($logs) {
                 $previouslog = array_shift($logs);
                 $previouslogtime = $previouslog->time;
                 $sessionstart = $previouslog->time;
-                $TIMESPEND = 0;
+
                 $daysconnected[date('Y-m-d', $previouslog->time)] = 1;
 
                 foreach ($logs as $log) {
@@ -72,8 +79,6 @@ class block_TIMESPEND_manager {
                     $daysconnected[date('Y-m-d', $log->time)] = 1;
                 }
                 $timespend += $previouslogtime - $sessionstart;
-            } else {
-                $timespend = 0;
             }
             $groups = groups_get_user_groups($this->course->id, $user->id);
             $group = !empty($groups) && !empty($groups[0]) ? $groups[0][0] : 0;
@@ -81,11 +86,70 @@ class block_TIMESPEND_manager {
                 'user' => $user,
                 'groupid' => $group,
                 'timespendtime' => $timespend,
-                'connectionratio' => round(count($daysconnected) / $perioddays, 2),
+                'certificate' => $certificate
             );
         }
 
         return $rows;
+    }
+
+    private function getcertificatecode($courseid, $userid)
+    {
+        global $DB, $CFG;
+        $sql = "SELECT DISTINCT ci.id AS certificateid, ci.userid, ci.code AS code,
+                                ci.timecreated AS citimecreated,
+                                crt.name AS certificatename, crt.*,
+                                cm.id AS coursemoduleid, cm.course, cm.module,
+                                c.id AS id, c.fullname AS fullname, c.*,
+				                ctx.id AS contextid, ctx.instanceid AS instanceid,
+				                f.itemid AS itemid, f.filename AS filename
+                           FROM {certificate_issues} ci
+                     INNER JOIN {certificate} crt
+                             ON crt.id = ci.certificateid
+                     INNER JOIN {course_modules} cm
+                             ON cm.course = crt.course
+                     INNER JOIN {course} c
+                             ON c.id = cm.course
+                     INNER JOIN {context} ctx
+                             ON ctx.instanceid = cm.id
+                     INNER JOIN {files} f
+                             ON f.contextid = ctx.id
+                          WHERE ctx.contextlevel = 70 AND
+                                f.mimetype = 'application/pdf' AND
+                                ci.userid = f.userid AND
+                                ci.userid = :userid AND
+                                c.id = :courseid
+                       GROUP BY ci.code
+                       ORDER BY ci.timecreated ASC";
+
+        $certificates = $DB->get_records_sql($sql, array('userid' => $userid, 'courseid' => $courseid));
+
+        if (empty($certificates)) {
+            $certificate = new stdClass();
+            $certificate->id = 0;
+            $certificate->code = 0;
+            $certificate->filelink = '';
+            return $certificate;
+        } else {
+            foreach ($certificates as $certdata) {
+                $certificate = new stdClass();
+
+                $certificate->timecreated = $certdata->citimecreated;
+                $certificate->id = $certdata->certificateid;
+                $certificate->code = $certdata->code;
+
+                $contextid = $certdata->contextid;
+                $filename = $certdata->filename;
+
+                $certificate->filelink = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'
+                    .$contextid.'/mod_certificate/issue/'
+                    .$certificate->id.'/'.$filename);
+
+                return $certificate;
+            }
+        }
+
+        return $this->content;
     }
 
     public function download_students_timespend($rows) {
@@ -99,6 +163,7 @@ class block_TIMESPEND_manager {
                 userdate($this->maxtime),
                 get_string('perioddiffrow', 'block_timespend'),
                 format_time($this->maxtime - $this->mintime),
+                get_string('receivedcerts', 'mod_certificate'),
             ),
             array(''),
             array(
@@ -107,7 +172,8 @@ class block_TIMESPEND_manager {
                 get_string('group'),
                 get_string('timespendrow', 'block_timespend') . ' (' . get_string('mins') . ')',
                 get_string('timespendrow', 'block_timespend'),
-                get_string('connectionratiorow', 'block_timespend'),
+                get_string('receivedcerts', 'mod_certificate'),
+
             ),
         );
 
@@ -118,7 +184,7 @@ class block_TIMESPEND_manager {
                 isset($groups[$row->groupid]) ? $groups[$row->groupid]->name : '',
                 round($row->timespendtime / MINSECS),
                 block_timespend_utils::format_timespend($row->timespendtime),
-                $row->connectionratio,
+                $row->certificate->code
             );
         }
 
@@ -228,6 +294,7 @@ class block_TIMESPEND_manager {
                 $row->timespendtime,
                 block_timespend_utils::format_timespend($row->timespendtime),
                 implode(', ', $row->ips),
+
             );
         }
 

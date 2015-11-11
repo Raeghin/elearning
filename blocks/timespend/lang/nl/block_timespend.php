@@ -42,7 +42,7 @@ $string['form_help'] = 'Tijs wordt berekend op basis van de sessie en de sessie 
 <strong>Sessie duur:</strong> tijdspanne tussen de eerste en laatste klik in een sessie.
 
 <strong>Cursus inzet:</strong> het totaal van alle sessie duren van een gebruiker.';
-$string['form_text'] = 'Selecteer de begin en eind datum en de maximale tijd dussen twee kliks in een sessie.';
+$string['form_text'] = 'Selecteer de begin en eind datum.';
 $string['mintime'] = 'Begindatum';
 $string['mintime_help'] = 'Begin van de periode waar de tijd mee moet tellen';
 $string['maxtime'] = 'Einddatum';
@@ -73,3 +73,5 @@ $string['timespendgroup'] = 'Cursus inzet van alle groeps leden van de groep {$a
 $string['usertimespend'] = 'Gedetailleerd rapport van {$a}.';
 $string['sessionstart'] = 'Sessie gestart';
 $string['sessionduration'] = 'Duur:';
+$string['nocertificate'] = 'Niet behaald';
+$string['certificatecode'] = 'Certificaat code';
