@@ -157,7 +157,7 @@ function block_progress_monitorable_modules() {
             'defaultAction' => 'submitted'
         ),
         'bigbluebuttonbn' => array(
-            'defaultTime' => 'timedue',
+            'defaultTime' => 'openingtime',
             'actions' => array(
                 'viewed' => array (
                     'logstore_legacy'     => "SELECT id
@@ -784,6 +784,8 @@ function block_progress_modules_in_use($course) {
  */
 function block_progress_event_information($config, $modules, $course, $userid = 0) {
     global $DB, $USER;
+
+    $dbmanager = $DB->get_manager(); // Used to check if fields exist.
     $events = array();
     $numevents = 0;
     $numeventsconfigured = 0;
@@ -798,7 +800,10 @@ function block_progress_event_information($config, $modules, $course, $userid = 
     // Check each known module (described in lib.php).
     foreach ($modules as $module => $details) {
         $fields = 'id, name';
-        if (array_key_exists('defaultTime', $details)) {
+        if (
+            array_key_exists('defaultTime', $details) &&
+            $dbmanager->field_exists($module, $details['defaultTime'])
+        ) {
             $fields .= ', '.$details['defaultTime'].' as due';
         }
 
@@ -1187,7 +1192,7 @@ function block_progress_bar($modules, $config, $events, $userid, $instance, $att
         $content .= HTML_WRITER::empty_tag('br');
         $content .= get_string($action, 'block_progress').'&nbsp;';
         $icon = ($attempted && $attempted !== 'failed' ? 'tick' : 'cross');
-        $content .= $OUTPUT->pix_icon($icon, '', 'block_progress');
+        $content .= $OUTPUT->pix_icon($icon, '', 'block_progress', array('class' => 'iconInInfo'));
         $content .= HTML_WRITER::empty_tag('br');
         if ($displaydate) {
             $content .= HTML_WRITER::start_tag('div', array('class' => 'expectedBy'));
