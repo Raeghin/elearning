@@ -887,20 +887,6 @@ function grade_get_plugin_info($courseid, $active_type, $active_plugin) {
         }
     }
 
-    foreach ($plugin_info as $plugin_type => $plugins) {
-        if (!empty($plugins->id) && $active_plugin == $plugins->id) {
-            $plugin_info['strings']['active_plugin_str'] = $plugins->string;
-            break;
-        }
-        foreach ($plugins as $plugin) {
-            if (is_a($plugin, 'grade_plugin_info')) {
-                if ($active_plugin == $plugin->id) {
-                    $plugin_info['strings']['active_plugin_str'] = $plugin->string;
-                }
-            }
-        }
-    }
-
     return $plugin_info;
 }
 
@@ -1099,7 +1085,7 @@ class grade_plugin_return {
      *
      * @param array $params - associative array with return parameters, if null parameter are taken from _GET or _POST
      */
-    public function grade_plugin_return($params = null) {
+    public function __construct($params = null) {
         if (empty($params)) {
             $this->type     = optional_param('gpr_type', null, PARAM_SAFEDIR);
             $this->plugin   = optional_param('gpr_plugin', null, PARAM_PLUGIN);
@@ -1114,6 +1100,13 @@ class grade_plugin_return {
                 }
             }
         }
+    }
+
+    /**
+     * Old syntax of class constructor. Deprecated in PHP7.
+     */
+    public function grade_plugin_return($params = null) {
+        self::__construct($params);
     }
 
     /**
@@ -2047,7 +2040,7 @@ class grade_seq extends grade_structure {
      * @param bool $category_grade_last category grade item is the last child
      * @param bool $nooutcomes Whether or not outcomes should be included
      */
-    public function grade_seq($courseid, $category_grade_last=false, $nooutcomes=false) {
+    public function __construct($courseid, $category_grade_last=false, $nooutcomes=false) {
         global $USER, $CFG;
 
         $this->courseid   = $courseid;
@@ -2061,6 +2054,13 @@ class grade_seq extends grade_structure {
         foreach ($this->elements as $key=>$unused) {
             $this->items[$this->elements[$key]['object']->id] =& $this->elements[$key]['object'];
         }
+    }
+
+    /**
+     * Old syntax of class constructor. Deprecated in PHP7.
+     */
+    public function grade_seq($courseid, $category_grade_last=false, $nooutcomes=false) {
+        self::__construct($courseid, $category_grade_last, $nooutcomes);
     }
 
     /**
@@ -2199,7 +2199,7 @@ class grade_tree extends grade_structure {
      * @param array $collapsed array of collapsed categories
      * @param bool  $nooutcomes Whether or not outcomes should be included
      */
-    public function grade_tree($courseid, $fillers=true, $category_grade_last=false,
+    public function __construct($courseid, $fillers=true, $category_grade_last=false,
                                $collapsed=null, $nooutcomes=false) {
         global $USER, $CFG, $COURSE, $DB;
 
@@ -2241,6 +2241,14 @@ class grade_tree extends grade_structure {
 
         grade_tree::fill_levels($this->levels, $this->top_element, 0);
 
+    }
+
+    /**
+     * Old syntax of class constructor. Deprecated in PHP7.
+     */
+    public function grade_tree($courseid, $fillers=true, $category_grade_last=false,
+                               $collapsed=null, $nooutcomes=false) {
+        self::__construct($courseid, $fillers, $category_grade_last, $collapsed, $nooutcomes);
     }
 
     /**
@@ -2362,6 +2370,44 @@ class grade_tree extends grade_structure {
     }
 
     /**
+     * Determines whether the grade tree item can be displayed.
+     * This is particularly targeted for grade categories that have no total (None) when rendering the grade tree.
+     * It checks if the grade tree item is of type 'category', and makes sure that the category, or at least one of children,
+     * can be output.
+     *
+     * @param array $element The grade category element.
+     * @return bool True if the grade tree item can be displayed. False, otherwise.
+     */
+    public static function can_output_item($element) {
+        $canoutput = true;
+
+        if ($element['type'] === 'category') {
+            $object = $element['object'];
+            $category = grade_category::fetch(array('id' => $object->id));
+            // Category has total, we can output this.
+            if ($category->get_grade_item()->gradetype != GRADE_TYPE_NONE) {
+                return true;
+            }
+
+            // Category has no total and has no children, no need to output this.
+            if (empty($element['children'])) {
+                return false;
+            }
+
+            $canoutput = false;
+            // Loop over children and make sure at least one child can be output.
+            foreach ($element['children'] as $child) {
+                $canoutput = self::can_output_item($child);
+                if ($canoutput) {
+                    break;
+                }
+            }
+        }
+
+        return $canoutput;
+    }
+
+    /**
      * Static recursive helper - makes full tree (all leafes are at the same level)
      *
      * @param array &$element The seed of the recursion
@@ -2388,6 +2434,9 @@ class grade_tree extends grade_structure {
         $maxdepth = reset($chdepths);
         foreach ($chdepths as $chid=>$chd) {
             if ($chd == $maxdepth) {
+                continue;
+            }
+            if (!self::can_output_item($element['children'][$chid])) {
                 continue;
             }
             for ($i=0; $i < $maxdepth-$chd; $i++) {
@@ -2421,6 +2470,9 @@ class grade_tree extends grade_structure {
         }
         $count = 0;
         foreach ($element['children'] as $key=>$child) {
+            if (!self::can_output_item($child)) {
+                continue;
+            }
             $count += grade_tree::inject_colspans($element['children'][$key]);
         }
         $element['colspan'] = $count;
@@ -2847,9 +2899,9 @@ abstract class grade_helper {
         $context = context_course::instance($courseid);
         self::$managesetting = array();
         if ($courseid != SITEID && has_capability('moodle/grade:manage', $context)) {
-            self::$managesetting['categoriesanditems'] = new grade_plugin_info('setup',
+            self::$managesetting['gradebooksetup'] = new grade_plugin_info('setup',
                 new moodle_url('/grade/edit/tree/index.php', array('id' => $courseid)),
-                get_string('categoriesanditems', 'grades'));
+                get_string('gradebooksetup', 'grades'));
             self::$managesetting['coursesettings'] = new grade_plugin_info('coursesettings',
                 new moodle_url('/grade/edit/settings/index.php', array('id'=>$courseid)),
                 get_string('coursegradesettings', 'grades'));

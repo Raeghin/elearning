@@ -140,6 +140,12 @@ class user_editadvanced_form extends moodleform {
         global $USER, $CFG, $DB, $OUTPUT;
 
         $mform = $this->_form;
+
+        // Trim required name fields.
+        foreach (useredit_get_required_name_fields() as $field) {
+            $mform->applyFilter($field, 'trim');
+        }
+
         if ($userid = $mform->getElementValue('id')) {
             $user = $DB->get_record('user', array('id' => $userid));
         } else {
@@ -262,7 +268,8 @@ class user_editadvanced_form extends moodleform {
         if (!$user or (isset($usernew->email) && $user->email !== $usernew->email)) {
             if (!validate_email($usernew->email)) {
                 $err['email'] = get_string('invalidemail');
-            } else if ($DB->record_exists('user', array('email' => $usernew->email, 'mnethostid' => $CFG->mnet_localhost_id))) {
+            } else if (empty($CFG->allowaccountssameemail)
+                    and $DB->record_exists('user', array('email' => $usernew->email, 'mnethostid' => $CFG->mnet_localhost_id))) {
                 $err['email'] = get_string('emailexists');
             }
         }

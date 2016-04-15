@@ -215,12 +215,12 @@ YUI.add('moodle-enrol_manual-quickenrolment', function(Y) {
             var options = this.get(UEP.OPTIONSTARTDATE);
             var index = 0, count = 0;
             for (var i in options) {
-                count++;
                 var option = create('<option value="'+i+'">'+options[i]+'</option>');
                 if (i == defaultvalue) {
                     index = count;
                 }
                 select.append(option);
+                count++;
             }
             select.set('selectedIndex', index);
         },
@@ -291,6 +291,13 @@ YUI.add('moodle-enrol_manual-quickenrolment', function(Y) {
                 y = parseInt(base.get('winHeight'))*0.1;
             }
             base.setXY([x,y]);
+            var zindex = 0;
+            Y.all('.moodle-has-zindex').each(function() {
+                if (parseInt(this.getComputedStyle('zIndex'), 10) > zindex) {
+                    zindex = parseInt(this.getComputedStyle('zIndex'), 10);
+                }
+            });
+            base.setStyle('zIndex', zindex + 1);
 
             if (this.get(UEP.USERS)===null) {
                 this.search(e, false);
@@ -608,7 +615,7 @@ YUI.add('moodle-enrol_manual-quickenrolment', function(Y) {
                 value : 0
             },
             defaultStartDate : {
-                value : 2,
+                value : 4,
                 validator : Y.Lang.isNumber
             },
             defaultDuration : {

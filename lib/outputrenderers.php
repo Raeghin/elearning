@@ -91,6 +91,7 @@ class renderer_base {
 
             $loader = new \core\output\mustache_filesystem_loader();
             $stringhelper = new \core\output\mustache_string_helper();
+            $quotehelper = new \core\output\mustache_quote_helper();
             $jshelper = new \core\output\mustache_javascript_helper($this->page->requires);
             $pixhelper = new \core\output\mustache_pix_helper($this);
 
@@ -99,6 +100,7 @@ class renderer_base {
 
             $helpers = array('config' => $safeconfig,
                              'str' => array($stringhelper, 'str'),
+                             'quote' => array($quotehelper, 'quote'),
                              'js' => array($jshelper, 'help'),
                              'pix' => array($pixhelper, 'pix'));
 
@@ -106,7 +108,8 @@ class renderer_base {
                 'cache' => $cachedir,
                 'escape' => 's',
                 'loader' => $loader,
-                'helpers' => $helpers));
+                'helpers' => $helpers,
+                'pragmas' => [Mustache_Engine::PRAGMA_BLOCKS]));
 
         }
 
@@ -827,11 +830,15 @@ class core_renderer extends renderer_base {
 
         if ($this->page->pagetype == 'site-index') {
             // Special case for site home page - please do not remove
-            return '';
+            return '<div class="sitelink">' .
+                   '<a title="Moodle" href="http://moodle.org/">' .
+                   '<img src="' . $this->pix_url('moodlelogo') . '" alt="'.get_string('moodlelogo').'" /></a></div>';
 
         } else if (!empty($CFG->target_release) && $CFG->target_release != $CFG->release) {
             // Special case for during install/upgrade.
-            return '';
+            return '<div class="sitelink">'.
+                   '<a title="Moodle" href="http://docs.moodle.org/en/Administrator_documentation" onclick="this.target=\'_blank\'">' .
+                   '<img src="' . $this->pix_url('moodlelogo') . '" alt="'.get_string('moodlelogo').'" /></a></div>';
 
         } else if ($this->page->course->id == $SITE->id || strpos($this->page->pagetype, 'course-view') === 0) {
             return '<div class="homelink"><a href="' . $CFG->wwwroot . '/">' .
@@ -1389,8 +1396,10 @@ class core_renderer extends renderer_base {
             $output = '';
             $skipdest = '';
         } else {
-            $output = html_writer::tag('a', get_string('skipa', 'access', $skiptitle), array('href' => '#sb-' . $bc->skipid, 'class' => 'skip-block'));
-            $skipdest = html_writer::tag('span', '', array('id' => 'sb-' . $bc->skipid, 'class' => 'skip-block-to'));
+            $output = html_writer::link('#sb-'.$bc->skipid, get_string('skipa', 'access', $skiptitle),
+                      array('class' => 'skip skip-block', 'id' => 'fsb-' . $bc->skipid));
+            $skipdest = html_writer::span('', 'skip-block-to',
+                      array('id' => 'sb-' . $bc->skipid));
         }
 
         $output .= html_writer::start_tag('div', $bc->attributes);
@@ -1822,13 +1831,21 @@ class core_renderer extends renderer_base {
      * @param string $selected selected element
      * @param array $nothing
      * @param string $formid
+     * @param array $attributes other attributes for the single select
      * @return string HTML fragment
      */
-    public function single_select($url, $name, array $options, $selected = '', $nothing = array('' => 'choosedots'), $formid = null) {
+    public function single_select($url, $name, array $options, $selected = '',
+                                $nothing = array('' => 'choosedots'), $formid = null, $attributes = array()) {
         if (!($url instanceof moodle_url)) {
             $url = new moodle_url($url);
         }
         $select = new single_select($url, $name, $options, $selected, $nothing, $formid);
+
+        if (array_key_exists('label', $attributes)) {
+            $select->set_label($attributes['label']);
+            unset($attributes['label']);
+        }
+        $select->attributes = $attributes;
 
         return $this->render($select);
     }
@@ -2949,7 +2966,7 @@ EOD;
      * @return string the HTML to output.
      */
     public function skip_link_target($id = null) {
-        return html_writer::tag('span', '', array('id' => $id));
+        return html_writer::span('', '', array('id' => $id));
     }
 
     /**
@@ -3172,7 +3189,7 @@ EOD;
         }
 
         // Get some navigation opts.
-        $opts = user_get_user_navigation_info($user, $this->page, $this->page->course);
+        $opts = user_get_user_navigation_info($user, $this->page);
 
         $avatarclasses = "avatars";
         $avatarcontents = html_writer::span($opts->metadata['useravatar'], 'avatar current');
@@ -3658,32 +3675,34 @@ EOD;
             return $str;
         }
 
-        // Print subtree
-        $str .= html_writer::start_tag('ul', array('class' => 'tabrow'. $tabobject->level));
-        $cnt = 0;
-        foreach ($tabobject->subtree as $tab) {
-            $liclass = '';
-            if (!$cnt) {
-                $liclass .= ' first';
-            }
-            if ($cnt == count($tabobject->subtree) - 1) {
-                $liclass .= ' last';
-            }
-            if ((empty($tab->subtree)) && (!empty($tab->selected))) {
-                $liclass .= ' onerow';
-            }
+        // Print subtree.
+        if ($tabobject->level == 0 || $tabobject->selected || $tabobject->activated) {
+            $str .= html_writer::start_tag('ul', array('class' => 'tabrow'. $tabobject->level));
+            $cnt = 0;
+            foreach ($tabobject->subtree as $tab) {
+                $liclass = '';
+                if (!$cnt) {
+                    $liclass .= ' first';
+                }
+                if ($cnt == count($tabobject->subtree) - 1) {
+                    $liclass .= ' last';
+                }
+                if ((empty($tab->subtree)) && (!empty($tab->selected))) {
+                    $liclass .= ' onerow';
+                }
 
-            if ($tab->selected) {
-                $liclass .= ' here selected';
-            } else if ($tab->activated) {
-                $liclass .= ' here active';
-            }
+                if ($tab->selected) {
+                    $liclass .= ' here selected';
+                } else if ($tab->activated) {
+                    $liclass .= ' here active';
+                }
 
-            // This will recursively call function render_tabobject() for each item in subtree
-            $str .= html_writer::tag('li', $this->render($tab), array('class' => trim($liclass)));
-            $cnt++;
+                // This will recursively call function render_tabobject() for each item in subtree.
+                $str .= html_writer::tag('li', $this->render($tab), array('class' => trim($liclass)));
+                $cnt++;
+            }
+            $str .= html_writer::end_tag('ul');
         }
-        $str .= html_writer::end_tag('ul');
 
         return $str;
     }

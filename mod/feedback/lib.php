@@ -2816,7 +2816,11 @@ function feedback_get_feedbacks_from_sitecourse_map($courseid) {
         }
     }
 
-    return array_merge($feedbacks1, $feedbacks2);
+    $feedbacks = array_merge($feedbacks1, $feedbacks2);
+    $modinfo = get_fast_modinfo(SITEID);
+    return array_filter($feedbacks, function($f) use ($modinfo) {
+        return ($cm = $modinfo->get_cm($f->cmid)) && $cm->uservisible;
+    });
 
 }
 
@@ -2938,7 +2942,6 @@ function feedback_send_email($cm, $feedback, $course, $userid) {
 
         $strfeedbacks = get_string('modulenameplural', 'feedback');
         $strfeedback  = get_string('modulename', 'feedback');
-        $strcompleted  = get_string('completed', 'feedback');
 
         if ($feedback->anonymous == FEEDBACK_ANONYMOUS_NO) {
             $printusername = fullname($user);
@@ -2955,7 +2958,9 @@ function feedback_send_email($cm, $feedback, $course, $userid) {
                             'userid='.$userid.'&'.
                             'do_show=showentries';
 
-            $postsubject = $strcompleted.': '.$info->username.' -> '.$feedback->name;
+            $a = array('username' => $info->username, 'feedbackname' => $feedback->name);
+
+            $postsubject = get_string('feedbackcompleted', 'feedback', $a);
             $posttext = feedback_send_email_text($info, $course);
 
             if ($teacher->mailformat == 1) {
@@ -3016,7 +3021,6 @@ function feedback_send_email_anonym($cm, $feedback, $course) {
 
         $strfeedbacks = get_string('modulenameplural', 'feedback');
         $strfeedback  = get_string('modulename', 'feedback');
-        $strcompleted  = get_string('completed', 'feedback');
         $printusername = get_string('anonymous_user', 'feedback');
 
         foreach ($teachers as $teacher) {
@@ -3025,7 +3029,9 @@ function feedback_send_email_anonym($cm, $feedback, $course) {
             $info->feedback = format_string($feedback->name, true);
             $info->url = $CFG->wwwroot.'/mod/feedback/show_entries_anonym.php?id='.$cm->id;
 
-            $postsubject = $strcompleted.': '.$info->username.' -> '.$feedback->name;
+            $a = array('username' => $info->username, 'feedbackname' => $feedback->name);
+
+            $postsubject = get_string('feedbackcompleted', 'feedback', $a);
             $posttext = feedback_send_email_text($info, $course);
 
             if ($teacher->mailformat == 1) {
@@ -3165,6 +3171,12 @@ function feedback_extend_settings_navigation(settings_navigation $settings,
                     new moodle_url('/mod/feedback/show_entries.php',
                                     array('id' => $PAGE->cm->id,
                                           'do_show' => 'showentries')));
+
+        if ($feedback->anonymous == FEEDBACK_ANONYMOUS_NO AND $feedback->course != SITEID) {
+            $feedbacknode->add(get_string('show_nonrespondents', 'feedback'),
+                        new moodle_url('/mod/feedback/show_nonrespondents.php',
+                                        array('id' => $PAGE->cm->id)));
+        }
     }
 }
 

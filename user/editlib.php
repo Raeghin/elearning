@@ -264,6 +264,8 @@ function useredit_update_trackforums($user, $usernew) {
  * @param array $interests
  */
 function useredit_update_interests($user, $interests) {
+    global $CFG;
+    require_once($CFG->dirroot . '/tag/lib.php');
     tag_set('user', $user->id, $interests, 'core', context_user::instance($user->id)->id);
 }
 
@@ -283,11 +285,17 @@ function useredit_shared_definition(&$mform, $editoroptions, $filemanageroptions
     }
 
     $strrequired = get_string('required');
+    $stringman = get_string_manager();
 
     // Add the necessary names.
     foreach (useredit_get_required_name_fields() as $fullname) {
         $mform->addElement('text', $fullname,  get_string($fullname),  'maxlength="100" size="30"');
-        $mform->addRule($fullname, $strrequired, 'required', null, 'client');
+        if ($stringman->string_exists('missing'.$fullname, 'core')) {
+            $strmissingfield = get_string('missing'.$fullname, 'core');
+        } else {
+            $strmissingfield = $strrequired;
+        }
+        $mform->addRule($fullname, $strmissingfield, 'required', null, 'client');
         $mform->setType($fullname, PARAM_NOTAGS);
     }
 
@@ -431,7 +439,7 @@ function useredit_shared_definition(&$mform, $editoroptions, $filemanageroptions
     $mform->addElement('text', 'department', get_string('department'), 'maxlength="255" size="25"');
     $mform->setType('department', PARAM_TEXT);
 
-    $mform->addElement('text', 'phone1', get_string('phone'), 'maxlength="20" size="25"');
+    $mform->addElement('text', 'phone1', get_string('phone1'), 'maxlength="20" size="25"');
     $mform->setType('phone1', PARAM_NOTAGS);
 
     $mform->addElement('text', 'phone2', get_string('phone2'), 'maxlength="20" size="25"');

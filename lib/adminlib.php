@@ -4731,6 +4731,50 @@ class admin_setting_pickroles extends admin_setting_configmulticheckbox {
 
 
 /**
+ * Admin setting that is a list of installed filter plugins.
+ *
+ * @copyright 2015 The Open University
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class admin_setting_pickfilters extends admin_setting_configmulticheckbox {
+
+    /**
+     * Constructor
+     *
+     * @param string $name unique ascii name, either 'mysetting' for settings
+     *      that in config, or 'myplugin/mysetting' for ones in config_plugins.
+     * @param string $visiblename localised name
+     * @param string $description localised long description
+     * @param array $default the default. E.g. array('urltolink' => 1, 'emoticons' => 1)
+     */
+    public function __construct($name, $visiblename, $description, $default) {
+        if (empty($default)) {
+            $default = array();
+        }
+        $this->load_choices();
+        foreach ($default as $plugin) {
+            if (!isset($this->choices[$plugin])) {
+                unset($default[$plugin]);
+            }
+        }
+        parent::__construct($name, $visiblename, $description, $default, null);
+    }
+
+    public function load_choices() {
+        if (is_array($this->choices)) {
+            return true;
+        }
+        $this->choices = array();
+
+        foreach (core_component::get_plugin_list('filter') as $plugin => $unused) {
+            $this->choices[$plugin] = filter_get_name($plugin);
+        }
+        return true;
+    }
+}
+
+
+/**
  * Text field with an advanced checkbox, that controls a additional $name.'_adv' setting.
  *
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -4892,9 +4936,16 @@ class admin_setting_special_gradelimiting extends admin_setting_configcheckbox {
     /**
      * Calls parent::__construct with specific arguments
      */
-    function admin_setting_special_gradelimiting() {
+    public function __construct() {
         parent::__construct('unlimitedgrades', get_string('unlimitedgrades', 'grades'),
             get_string('unlimitedgrades_help', 'grades'), '0', '1', '0');
+    }
+
+    /**
+     * Old syntax of class constructor. Deprecated in PHP7.
+     */
+    public function admin_setting_special_gradelimiting() {
+        self::__construct();
     }
 
     /**
@@ -7649,6 +7700,12 @@ class admin_setting_enablemobileservice extends admin_setting_configcheckbox {
     public function get_setting() {
         global $CFG;
 
+        // First check if is not set.
+        $result = $this->config_read($this->name);
+        if (is_null($result)) {
+            return null;
+        }
+
         // For install cli script, $CFG->defaultuserroleid is not set so return 0
         // Or if web services aren't enabled this can't be,
         if (empty($CFG->defaultuserroleid) || empty($CFG->enablewebservices)) {
@@ -7659,7 +7716,7 @@ class admin_setting_enablemobileservice extends admin_setting_configcheckbox {
         $webservicemanager = new webservice();
         $mobileservice = $webservicemanager->get_external_service_by_shortname(MOODLE_OFFICIAL_MOBILE_SERVICE);
         if ($mobileservice->enabled and $this->is_protocol_cap_allowed()) {
-            return $this->config_read($this->name); //same as returning 1
+            return $result;
         } else {
             return 0;
         }

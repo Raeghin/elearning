@@ -53,8 +53,15 @@ class moodlequickform_guideeditor extends HTML_QuickForm_input {
      * @param string $elementlabel
      * @param array $attributes
      */
+    public function __construct($elementname=null, $elementlabel=null, $attributes=null) {
+        parent::__construct($elementname, $elementlabel, $attributes);
+    }
+
+    /**
+     * Old syntax of class constructor for backward compatibility.
+     */
     public function moodlequickform_guideeditor($elementname=null, $elementlabel=null, $attributes=null) {
-        parent::HTML_QuickForm_input($elementname, $elementlabel, $attributes);
+        self::__construct($elementname, $elementlabel, $attributes);
     }
 
     /**
@@ -127,7 +134,7 @@ class moodlequickform_guideeditor extends HTML_QuickForm_input {
             $html .= $renderer->display_regrade_confirmation($this->getName(), $this->regradeconfirmation, $data['regrade']);
         }
         if ($this->validationerrors) {
-            $html .= $renderer->notification($this->validationerrors, 'error');
+            $html .= $renderer->notification($this->validationerrors);
         }
         $html .= $renderer->display_guide($data['criteria'], $data['comments'], $data['options'], $mode, $this->getName());
         return $html;

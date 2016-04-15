@@ -138,22 +138,28 @@ if ($action === 'delete') {
         $PAGE->set_heading($SITE->fullname);
         echo $OUTPUT->header();
 
+        // Output edit mode title.
+        echo $OUTPUT->heading($strblogs . ': ' . get_string('deleteentry', 'blog'), 2);
+
+        echo $OUTPUT->confirm(get_string('blogdeleteconfirm', 'blog'),
+                              new moodle_url('edit.php', $optionsyes),
+                              new moodle_url('index.php', $optionsno));
+
+        echo '<br />';
         // Output the entry.
         $entry->prepare_render();
         echo $output->render($entry);
 
-        echo '<br />';
-        echo $OUTPUT->confirm(get_string('blogdeleteconfirm', 'blog'),
-                              new moodle_url('edit.php', $optionsyes),
-                              new moodle_url('index.php', $optionsno));
         echo $OUTPUT->footer();
         die;
     }
 } else if ($action == 'add') {
-    $PAGE->set_title("$SITE->shortname: $strblogs: " . get_string('addnewentry', 'blog'));
+    $editmodetitle = $strblogs . ': ' . get_string('addnewentry', 'blog');
+    $PAGE->set_title("$SITE->shortname: $editmodetitle");
     $PAGE->set_heading(fullname($USER));
 } else if ($action == 'edit') {
-    $PAGE->set_title("$SITE->shortname: $strblogs: " . get_string('editentry', 'blog'));
+    $editmodetitle = $strblogs . ': ' . get_string('editentry', 'blog');
+    $PAGE->set_title("$SITE->shortname: $editmodetitle");
     $PAGE->set_heading(fullname($USER));
 }
 
@@ -274,6 +280,10 @@ $entry->modid = $modid;
 $entry->courseid = $courseid;
 
 echo $OUTPUT->header();
+// Output title for editing mode.
+if (isset($editmodetitle)) {
+    echo $OUTPUT->heading($editmodetitle, 2);
+}
 $blogeditform->display();
 echo $OUTPUT->footer();
 

@@ -1733,7 +1733,7 @@ class moodle_page {
             $this->add_body_class('notloggedin');
         }
 
-        if (!empty($USER->editing)) {
+        if ($this->user_is_editing()) {
             $this->add_body_class('editing');
             if (optional_param('bui_moveid', false, PARAM_INT)) {
                 $this->add_body_class('blocks-moving');
@@ -1746,6 +1746,11 @@ class moodle_page {
 
         if ($this->_devicetypeinuse != 'default') {
             $this->add_body_class($this->_devicetypeinuse . 'theme');
+        }
+
+        // Add class for behat site to apply behat related fixes.
+        if (defined('BEHAT_SITE_RUNNING')) {
+            $this->add_body_class('behat-site');
         }
     }
 

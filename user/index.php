@@ -224,7 +224,9 @@ if ($mycourses = enrol_get_my_courses()) {
     $controlstable->data[0]->cells[] = $OUTPUT->render($select);
 }
 
-$controlstable->data[0]->cells[] = groups_print_course_menu($course, $baseurl->out(), true);
+if ($groupmenu = groups_print_course_menu($course, $baseurl->out(), true)) {
+    $controlstable->data[0]->cells[] = $groupmenu;
+}
 
 if (!isset($hiddenfields['lastaccess'])) {
     // Get minimum lastaccess for this course and display a dropbox to filter by lastaccess going back this far.
@@ -491,8 +493,8 @@ $userlist = $DB->get_recordset_sql("$select $from $where $sort", $params, $table
 // If there are multiple Roles in the course, then show a drop down menu for switching.
 if (count($rolenames) > 1) {
     echo '<div class="rolesform">';
-    echo '<label for="rolesform_jump">'.get_string('currentrole', 'role').'&nbsp;</label>';
-    echo $OUTPUT->single_select($rolenamesurl, 'roleid', $rolenames, $roleid, null, 'rolesform');
+    echo $OUTPUT->single_select($rolenamesurl, 'roleid', $rolenames, $roleid, null,
+        'rolesform', array('label' => get_string('currentrole', 'role')));
     echo '</div>';
 
 } else if (count($rolenames) == 1) {
@@ -504,42 +506,45 @@ if (count($rolenames) > 1) {
     echo '</div>';
 }
 
+$editlink = '';
+if ($course->id != SITEID && has_capability('moodle/course:enrolreview', $context)) {
+    $editlink = new moodle_url('/enrol/users.php', array('id' => $course->id));
+}
+
 if ($roleid > 0) {
     $a = new stdClass();
     $a->number = $totalcount;
     $a->role = $rolenames[$roleid];
     $heading = format_string(get_string('xuserswiththerole', 'role', $a));
 
-    if ($currentgroup and $group) {
+    if ($currentgroup and !empty($group)) {
         $a->group = $group->name;
         $heading .= ' ' . format_string(get_string('ingroup', 'role', $a));
     }
 
-    if ($accesssince) {
+    if ($accesssince && !empty($timeoptions[$accesssince])) {
         $a->timeperiod = $timeoptions[$accesssince];
         $heading .= ' ' . format_string(get_string('inactiveformorethan', 'role', $a));
     }
 
     $heading .= ": $a->number";
 
-    if (user_can_assign($context, $roleid)) {
-        $headingurl = new moodle_url($CFG->wwwroot . '/' . $CFG->admin . '/roles/assign.php',
-                array('roleid' => $roleid, 'contextid' => $context->id));
-        $heading .= $OUTPUT->action_icon($headingurl, new pix_icon('t/edit', get_string('edit')));
+    if (!empty($editlink)) {
+        $editlink->param('role', $roleid);
+        $heading .= $OUTPUT->action_icon($editlink, new pix_icon('t/edit', get_string('edit')));
     }
     echo $OUTPUT->heading($heading, 3);
 } else {
-    if ($course->id != SITEID && has_capability('moodle/course:enrolreview', $context)) {
-        $editlink = $OUTPUT->action_icon(new moodle_url('/enrol/users.php', array('id' => $course->id)),
-                                         new pix_icon('t/edit', get_string('edit')));
-    } else {
-        $editlink = '';
-    }
     if ($course->id == SITEID and $roleid < 0) {
         $strallparticipants = get_string('allsiteusers', 'role');
     } else {
         $strallparticipants = get_string('allparticipants');
     }
+
+    if (!empty($editlink)) {
+        $editlink = $OUTPUT->action_icon($editlink, new pix_icon('t/edit', get_string('edit')));
+    }
+
     if ($matchcount < $totalcount) {
         echo $OUTPUT->heading($strallparticipants.get_string('labelsep', 'langconfig').$matchcount.'/'.$totalcount . $editlink, 3);
     } else {
@@ -644,7 +649,6 @@ if ($mode === MODE_USERDETAILS) {    // Print simple listing.
                     $row->cells[1]->text .= get_string('role').get_string('labelsep', 'langconfig').$user->role.'<br />';
                 }
                 if ($user->maildisplay == 1 or ($user->maildisplay == 2 and ($course->id != SITEID) and !isguestuser()) or
-                            has_capability('moodle/course:viewhiddenuserfields', $context) or
                             in_array('email', $extrafields) or ($user->id == $USER->id)) {
                     $row->cells[1]->text .= get_string('email').get_string('labelsep', 'langconfig').html_writer::link("mailto:$user->email", $user->email) . '<br />';
                 }

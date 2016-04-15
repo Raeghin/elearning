@@ -82,25 +82,25 @@ function form_init_date_js() {
         $function = 'M.form.dateselector.init_date_selectors';
         $config = array(array(
             'firstdayofweek'    => $calendar->get_starting_weekday(),
-            'mon'               => date_format_string(strtotime("Monday"), '%a', 99),
-            'tue'               => date_format_string(strtotime("Tuesday"), '%a', 99),
-            'wed'               => date_format_string(strtotime("Wednesday"), '%a', 99),
-            'thu'               => date_format_string(strtotime("Thursday"), '%a', 99),
-            'fri'               => date_format_string(strtotime("Friday"), '%a', 99),
-            'sat'               => date_format_string(strtotime("Saturday"), '%a', 99),
-            'sun'               => date_format_string(strtotime("Sunday"), '%a', 99),
-            'january'           => date_format_string(strtotime("January 1"), '%B', 99),
-            'february'          => date_format_string(strtotime("February 1"), '%B', 99),
-            'march'             => date_format_string(strtotime("March 1"), '%B', 99),
-            'april'             => date_format_string(strtotime("April 1"), '%B', 99),
-            'may'               => date_format_string(strtotime("May 1"), '%B', 99),
-            'june'              => date_format_string(strtotime("June 1"), '%B', 99),
-            'july'              => date_format_string(strtotime("July 1"), '%B', 99),
-            'august'            => date_format_string(strtotime("August 1"), '%B', 99),
-            'september'         => date_format_string(strtotime("September 1"), '%B', 99),
-            'october'           => date_format_string(strtotime("October 1"), '%B', 99),
-            'november'          => date_format_string(strtotime("November 1"), '%B', 99),
-            'december'          => date_format_string(strtotime("December 1"), '%B', 99)
+            'mon'               => strftime('%a', strtotime("Monday")),
+            'tue'               => strftime('%a', strtotime("Tuesday")),
+            'wed'               => strftime('%a', strtotime("Wednesday")),
+            'thu'               => strftime('%a', strtotime("Thursday")),
+            'fri'               => strftime('%a', strtotime("Friday")),
+            'sat'               => strftime('%a', strtotime("Saturday")),
+            'sun'               => strftime('%a', strtotime("Sunday")),
+            'january'           => strftime('%B', strtotime("January 1")),
+            'february'          => strftime('%B', strtotime("February 1")),
+            'march'             => strftime('%B', strtotime("March 1")),
+            'april'             => strftime('%B', strtotime("April 1")),
+            'may'               => strftime('%B', strtotime("May 1")),
+            'june'              => strftime('%B', strtotime("June 1")),
+            'july'              => strftime('%B', strtotime("July 1")),
+            'august'            => strftime('%B', strtotime("August 1")),
+            'september'         => strftime('%B', strtotime("September 1")),
+            'october'           => strftime('%B', strtotime("October 1")),
+            'november'          => strftime('%B', strtotime("November 1")),
+            'december'          => strftime('%B', strtotime("December 1"))
         ));
         $PAGE->requires->yui_module($module, $function, $config);
         $done = true;
@@ -157,7 +157,7 @@ abstract class moodleform {
      * @param mixed $attributes you can pass a string of html attributes here or an array.
      * @param bool $editable
      */
-    function moodleform($action=null, $customdata=null, $method='post', $target='', $attributes=null, $editable=true) {
+    public function __construct($action=null, $customdata=null, $method='post', $target='', $attributes=null, $editable=true) {
         global $CFG, $FULLME;
         // no standard mform in moodle should allow autocomplete with the exception of user signup
         if (empty($attributes)) {
@@ -205,6 +205,13 @@ abstract class moodleform {
 
         // we have to know all input types before processing submission ;-)
         $this->_process_submission($method);
+    }
+
+    /**
+     * Old syntax of class constructor for backward compatibility.
+     */
+    public function moodleform($action=null, $customdata=null, $method='post', $target='', $attributes=null, $editable=true) {
+        self::__construct($action, $customdata, $method, $target, $attributes, $editable);
     }
 
     /**
@@ -1239,7 +1246,7 @@ abstract class moodleform {
             if (is_array($strings)) {
                 foreach ($strings as $string) {
                     if (is_array($string)) {
-                        call_user_method_array('string_for_js', $PAGE->requires, $string);
+                        call_user_func_array(array($PAGE->requires, 'string_for_js'), $string);
                     } else {
                         $PAGE->requires->string_for_js($string, 'moodle');
                     }
@@ -1426,12 +1433,13 @@ class MoodleQuickForm extends HTML_QuickForm_DHTMLRulesTableless {
      * @param string $target (optional)Form's target defaults to none
      * @param mixed $attributes (optional)Extra attributes for <form> tag
      */
-    function MoodleQuickForm($formName, $method, $action, $target='', $attributes=null){
+    public function __construct($formName, $method, $action, $target='', $attributes=null) {
         global $CFG, $OUTPUT;
 
         static $formcounter = 1;
 
-        HTML_Common::HTML_Common($attributes);
+        // TODO MDL-52313 Replace with the call to parent::__construct().
+        HTML_Common::__construct($attributes);
         $target = empty($target) ? array() : array('target' => $target);
         $this->_formName = $formName;
         if (is_a($action, 'moodle_url')){
@@ -1458,6 +1466,13 @@ class MoodleQuickForm extends HTML_QuickForm_DHTMLRulesTableless {
         $this->_reqHTML = '<img class="req" title="'.get_string('requiredelement', 'form').'" alt="'.get_string('requiredelement', 'form').'" src="'.$OUTPUT->pix_url('req') .'" />';
         $this->_advancedHTML = '<img class="adv" title="'.get_string('advancedelement', 'form').'" alt="'.get_string('advancedelement', 'form').'" src="'.$OUTPUT->pix_url('adv') .'" />';
         $this->setRequiredNote(get_string('somefieldsrequired', 'form', '<img alt="'.get_string('requiredelement', 'form').'" src="'.$OUTPUT->pix_url('req') .'" />'));
+    }
+
+    /**
+     * Old syntax of class constructor for backward compatibility.
+     */
+    public function MoodleQuickForm($formName, $method, $action, $target='', $attributes=null) {
+        self::__construct($formName, $method, $action, $target, $attributes);
     }
 
     /**
@@ -2594,7 +2609,7 @@ class MoodleQuickForm_Renderer extends HTML_QuickForm_Renderer_Tableless{
     /**
      * Constructor
      */
-    function MoodleQuickForm_Renderer(){
+    public function __construct() {
         // switch next two lines for ol li containers for form items.
         //        $this->_elementTemplates=array('default'=>"\n\t\t".'<li class="fitem"><label>{label}{help}<!-- BEGIN required -->{req}<!-- END required --></label><div class="qfelement<!-- BEGIN error --> error<!-- END error --> {type}"><!-- BEGIN error --><span class="error">{error}</span><br /><!-- END error -->{element}</div></li>');
         $this->_elementTemplates = array(
@@ -2610,7 +2625,14 @@ class MoodleQuickForm_Renderer extends HTML_QuickForm_Renderer_Tableless{
 
         'nodisplay'=>'');
 
-        parent::HTML_QuickForm_Renderer_Tableless();
+        parent::__construct();
+    }
+
+    /**
+     * Old syntax of class constructor for backward compatibility.
+     */
+    public function MoodleQuickForm_Renderer() {
+        self::__construct();
     }
 
     /**
@@ -2644,6 +2666,8 @@ class MoodleQuickForm_Renderer extends HTML_QuickForm_Renderer_Tableless{
         $this->_collapseButtons = '';
         $formid = $form->getAttribute('id');
         parent::startForm($form);
+        // HACK to prevent browsers from automatically inserting the user's password into the wrong fields.
+        $this->_hiddenHtml .= prevent_form_autofill_password();
         if ($form->isFrozen()){
             $this->_formTemplate = "\n<div class=\"mform frozen\">\n{content}\n</div>";
         } else {
@@ -2932,6 +2956,7 @@ $GLOBALS['_HTML_QuickForm_default_renderer'] = new MoodleQuickForm_Renderer();
 
 /** Please keep this list in alphabetical order. */
 MoodleQuickForm::registerElementType('advcheckbox', "$CFG->libdir/form/advcheckbox.php", 'MoodleQuickForm_advcheckbox');
+MoodleQuickForm::registerElementType('autocomplete', "$CFG->libdir/form/autocomplete.php", 'MoodleQuickForm_autocomplete');
 MoodleQuickForm::registerElementType('button', "$CFG->libdir/form/button.php", 'MoodleQuickForm_button');
 MoodleQuickForm::registerElementType('cancel', "$CFG->libdir/form/cancel.php", 'MoodleQuickForm_cancel');
 MoodleQuickForm::registerElementType('searchableselector', "$CFG->libdir/form/searchableselector.php", 'MoodleQuickForm_searchableselector');

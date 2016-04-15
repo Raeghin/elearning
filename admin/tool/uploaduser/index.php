@@ -168,7 +168,7 @@ if ($formdata = $mform2->is_cancelled()) {
     $allowdeletes      = (!empty($formdata->uuallowdeletes) and $optype != UU_USER_ADDNEW and $optype != UU_USER_ADDINC);
     $allowsuspends     = (!empty($formdata->uuallowsuspends));
     $bulk              = $formdata->uubulk;
-    $noemailduplicates = $formdata->uunoemailduplicates;
+    $noemailduplicates = empty($CFG->allowaccountssameemail) ? 1 : $formdata->uunoemailduplicates;
     $standardusernames = $formdata->uustandardusernames;
     $resetpasswords    = isset($formdata->uuforcepasswordchange) ? $formdata->uuforcepasswordchange : UU_PWRESET_NONE;
 
@@ -232,8 +232,8 @@ if ($formdata = $mform2->is_cancelled()) {
                 if (isset($USER->$key) and is_array($USER->$key)) {
                     // this must be some hacky field that is abusing arrays to store content and format
                     $user->$key = array();
-                    $user->$key['text']   = $value;
-                    $user->$key['format'] = FORMAT_MOODLE;
+                    $user->{$key['text']}   = $value;
+                    $user->{$key['format']} = FORMAT_MOODLE;
                 } else {
                     $user->$key = trim($value);
                 }
@@ -567,8 +567,18 @@ if ($formdata = $mform2->is_cancelled()) {
                     }
                     if ($existinguser->$column !== $user->$column) {
                         if ($column === 'email') {
-                            if ($DB->record_exists('user', array('email'=>$user->email))) {
-                                if ($noemailduplicates) {
+                            $select = $DB->sql_like('email', ':email', false, true, false, '|');
+                            $params = array('email' => $DB->sql_like_escape($user->email, '|'));
+                            if ($DB->record_exists_select('user', $select , $params)) {
+
+                                $changeincase = core_text::strtolower($existinguser->$column) === core_text::strtolower(
+                                                $user->$column);
+
+                                if ($changeincase) {
+                                    // If only case is different then switch to lower case and carry on.
+                                    $user->$column = core_text::strtolower($user->$column);
+                                    continue;
+                                } else if ($noemailduplicates) {
                                     $upt->track('email', $stremailduplicate, 'error');
                                     $upt->track('status', $strusernotupdated, 'error');
                                     $userserrors++;
@@ -1183,7 +1193,10 @@ while ($linenum <= $previewrows and $fields = $cir->next()) {
         if (!validate_email($rowcols['email'])) {
             $rowcols['status'][] = get_string('invalidemail');
         }
-        if ($DB->record_exists('user', array('email'=>$rowcols['email']))) {
+
+        $select = $DB->sql_like('email', ':email', false, true, false, '|');
+        $params = array('email' => $DB->sql_like_escape($rowcols['email'], '|'));
+        if ($DB->record_exists_select('user', $select , $params)) {
             $rowcols['status'][] = $stremailduplicate;
         }
     }

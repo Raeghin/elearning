@@ -445,6 +445,8 @@ function file_prepare_draft_area(&$draftitemid, $contextid, $component, $fileare
 
 /**
  * Convert encoded URLs in $text from the @@PLUGINFILE@@/... form to an actual URL.
+ * Passing a new option reverse = true in the $options var will make the function to convert actual URLs in $text to encoded URLs
+ * in the @@PLUGINFILE@@ form.
  *
  * @category files
  * @global stdClass $CFG
@@ -454,7 +456,7 @@ function file_prepare_draft_area(&$draftitemid, $contextid, $component, $fileare
  * @param string $component
  * @param string $filearea helps identify the file area.
  * @param int $itemid helps identify the file area.
- * @param array $options text and file options ('forcehttps'=>false)
+ * @param array $options text and file options ('forcehttps'=>false), use reverse = true to reverse the behaviour of the function.
  * @return string the processed text.
  */
 function file_rewrite_pluginfile_urls($text, $file, $contextid, $component, $filearea, $itemid, array $options=null) {
@@ -479,7 +481,11 @@ function file_rewrite_pluginfile_urls($text, $file, $contextid, $component, $fil
         $baseurl = str_replace('http://', 'https://', $baseurl);
     }
 
-    return str_replace('@@PLUGINFILE@@/', $baseurl, $text);
+    if (!empty($options['reverse'])) {
+        return str_replace($baseurl, '@@PLUGINFILE@@/', $text);
+    } else {
+        return str_replace('@@PLUGINFILE@@/', $baseurl, $text);
+    }
 }
 
 /**
@@ -4240,6 +4246,35 @@ function file_pluginfile($relativepath, $forcedownload, $preview = null) {
             send_file_not_found();
         }
 
+    } else if ($component === 'cohort') {
+
+        $cohortid = (int)array_shift($args);
+        $cohort = $DB->get_record('cohort', array('id' => $cohortid), '*', MUST_EXIST);
+        $cohortcontext = context::instance_by_id($cohort->contextid);
+
+        // The context in the file URL must be either cohort context or context of the course underneath the cohort's context.
+        if ($context->id != $cohort->contextid &&
+            ($context->contextlevel != CONTEXT_COURSE || !in_array($cohort->contextid, $context->get_parent_context_ids()))) {
+            send_file_not_found();
+        }
+
+        // User is able to access cohort if they have view cap on cohort level or
+        // the cohort is visible and they have view cap on course level.
+        $canview = has_capability('moodle/cohort:view', $cohortcontext) ||
+                ($cohort->visible && has_capability('moodle/cohort:view', $context));
+
+        if ($filearea === 'description' && $canview) {
+            $filename = array_pop($args);
+            $filepath = $args ? '/'.implode('/', $args).'/' : '/';
+            if (($file = $fs->get_file($cohortcontext->id, 'cohort', 'description', $cohort->id, $filepath, $filename))
+                    && !$file->is_directory()) {
+                \core\session\manager::write_close(); // Unlock session during file serving.
+                send_stored_file($file, 60 * 60, 0, $forcedownload, array('preview' => $preview));
+            }
+        }
+
+        send_file_not_found();
+
     } else if ($component === 'group') {
         if ($context->contextlevel != CONTEXT_COURSE) {
             send_file_not_found();
@@ -4475,6 +4510,14 @@ function file_pluginfile($relativepath, $forcedownload, $preview = null) {
             if ($birecord->blockname !== $blockname) {
                 // somebody tries to gain illegal access, cm type must match the component!
                 send_file_not_found();
+            }
+
+            if ($context->get_course_context(false)) {
+                // If block is in course context, then check if user has capability to access course.
+                require_course_login($course);
+            } else if ($CFG->forcelogin) {
+                // If user is logged out, bp record will not be visible, even if the user would have access if logged in.
+                require_login();
             }
 
             $bprecord = $DB->get_record('block_positions', array('contextid' => $context->id, 'blockinstanceid' => $context->instanceid));

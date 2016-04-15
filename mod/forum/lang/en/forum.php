@@ -123,6 +123,7 @@ $string['deletesure'] = 'Are you sure you want to delete this post?';
 $string['deletesureplural'] = 'Are you sure you want to delete this post and all replies? ({$a} posts)';
 $string['digestmailheader'] = 'This is your daily digest of new posts from the {$a->sitename} forums. To change your default forum email preferences, go to {$a->userprefs}.';
 $string['digestmailpost'] = 'Change your forum digest preferences';
+$string['digestmailpostlink'] = 'Change your forum digest preferences: {$a}';
 $string['digestmailprefs'] = 'your user profile';
 $string['digestmailsubject'] = '{$a}: forum digest';
 $string['digestmailtime'] = 'Hour to send digest emails';
@@ -392,6 +393,9 @@ $string['postincontext'] = 'See this post in context';
 $string['postmailinfo'] = 'This is a copy of a message posted on the {$a} website.
 
 To reply click on this link:';
+$string['postmailinfolink'] = 'This is a copy of a message posted in {$a->coursename}.
+
+To reply click on this link: {$a->replylink}';
 $string['postmailnow'] = '<p>This post will be mailed out immediately to all forum subscribers.</p>';
 $string['postmailsubject'] = '{$a->courseshortname}: {$a->subject}';
 $string['postrating1'] = 'Mostly separate knowing';
@@ -462,7 +466,7 @@ $string['subscribeenrolledonly'] = 'Sorry, only enrolled users are allowed to su
 $string['subscribed'] = 'Subscribed';
 $string['subscribenone'] = 'Unsubscribe everyone from this forum';
 $string['subscribers'] = 'Subscribers';
-$string['subscribersto'] = 'Subscribers to \'{$a}\'';
+$string['subscriberstowithcount'] = 'Subscribers to "{$a->name}" ({$a->count})';
 $string['subscribestart'] = 'Send me notifications of new posts in this forum';
 $string['subscribestop'] = 'I don\'t want to be notified of new posts in this forum';
 $string['subscription'] = 'Subscription';
@@ -483,7 +487,9 @@ $string['subscriptionauto'] = 'Auto subscription';
 $string['subscriptiondisabled'] = 'Subscription disabled';
 $string['subscriptions'] = 'Subscriptions';
 $string['thisforumisthrottled'] = 'This forum has a limit to the number of forum postings you can make in a given time period - this is currently set at {$a->blockafter} posting(s) in {$a->blockperiod}';
+$string['timedhidden'] = 'Timed status: Hidden from students';
 $string['timedposts'] = 'Timed posts';
+$string['timedvisible'] = 'Timed status: Visible to all users';
 $string['timestartenderror'] = 'Display end date cannot be earlier than the start date';
 $string['trackforum'] = 'Track unread posts';
 $string['tracking'] = 'Track';
@@ -501,7 +507,9 @@ $string['unreadposts'] = 'Unread posts';
 $string['unreadpostsnumber'] = '{$a} unread posts';
 $string['unreadpostsone'] = '1 unread post';
 $string['unsubscribe'] = 'Unsubscribe from this forum';
+$string['unsubscribelink'] = 'Unsubscribe from this forum: {$a}';
 $string['unsubscribediscussion'] = 'Unsubscribe from this discussion';
+$string['unsubscribediscussionlink'] = 'Unsubscribe from this discussion: {$a}';
 $string['unsubscribeall'] = 'Unsubscribe from all forums';
 $string['unsubscribeallconfirm'] = 'You are currently subscribed to {$a->forums} forums, and {$a->discussions} discussions. Do you really want to unsubscribe from all forums and discussions, and disable discussion auto-subscription?';
 $string['unsubscribeallconfirmforums'] = 'You are currently subscribed to {$a->forums} forums. Do you really want to unsubscribe from all forums and disable discussion auto-subscription?';
@@ -518,3 +526,6 @@ $string['warnformorepost'] = 'Warning! There is more than one discussion in this
 $string['yournewquestion'] = 'Your new question';
 $string['yournewtopic'] = 'Your new discussion topic';
 $string['yourreply'] = 'Your reply';
+
+// Deprecated since Moodle 3.0.
+$string['subscribersto'] = 'Subscribers to "{$a->name}"';

@@ -266,7 +266,7 @@ if (!$canreply and $forum->type !== 'news') {
 }
 
 // Output the links to neighbour discussions.
-$neighbours = forum_get_discussion_neighbours($cm, $discussion);
+$neighbours = forum_get_discussion_neighbours($cm, $discussion, $forum);
 $neighbourlinks = $renderer->neighbouring_discussion_navigation($neighbours['prev'], $neighbours['next']);
 echo $neighbourlinks;
 
@@ -325,7 +325,7 @@ if ($forum->type != 'single'
         if (!empty($forummenu)) {
             echo '<div class="movediscussionoption">';
             $select = new url_select($forummenu, '',
-                    array(''=>get_string("movethisdiscussionto", "forum")),
+                    array('/mod/forum/discuss.php?d=' . $discussion->id => get_string("movethisdiscussionto", "forum")),
                     'forummenu', get_string('move'));
             echo $OUTPUT->render($select);
             echo "</div>";

@@ -38,7 +38,6 @@ define('BEHAT_EXITCODE_REQUIREMENT', 251);
 define('BEHAT_EXITCODE_PERMISSIONS', 252);
 define('BEHAT_EXITCODE_REINSTALL', 253);
 define('BEHAT_EXITCODE_INSTALL', 254);
-define('BEHAT_EXITCODE_COMPOSER', 255);
 define('BEHAT_EXITCODE_INSTALLED', 256);
 
 /**
@@ -181,15 +180,6 @@ function behat_clean_init_config() {
             unset($CFG->{$key});
         }
     }
-
-    // Here we are forcing the navbar to be absolutely positioned in Chrome, Safari and IE in order to
-    // avoid a driver bug whereby when the browser scrolls something into view it doesn't account
-    // for fixed positioned elements that end up obscuring the item thus leading to errors that
-    // could be avoided by scrolling an additional amount.
-    // This should be removed as soon as the affected drivers have been fixed.
-    $CFG->forced_plugin_settings['theme_clean'] = array(
-        'customcss' => 'body.safari .navbar-fixed-top, body.ie .navbar-fixed-top {position: absolute;}'
-    );
 }
 
 /**

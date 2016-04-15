@@ -273,6 +273,14 @@ class assign_grading_table extends table_sql implements renderable {
             $columns[] = 'fullname';
             $headers[] = get_string('fullname');
 
+            // Participant # details if can view real identities.
+            if ($this->assignment->is_blind_marking()) {
+                if (!$this->is_downloading()) {
+                    $columns[] = 'recordid';
+                    $headers[] = get_string('recordid', 'assign');
+                }
+            }
+
             foreach ($extrauserfields as $extrafield) {
                 $columns[] = $extrafield;
                 $headers[] = get_user_field_name($extrafield);
@@ -402,8 +410,6 @@ class assign_grading_table extends table_sql implements renderable {
         foreach ($extrauserfields as $extrafield) {
              $this->column_class($extrafield, $extrafield);
         }
-        // We require at least one unique column for the sort.
-        $this->sortable(true, 'userid');
         $this->no_sorting('recordid');
         $this->no_sorting('finalgrade');
         $this->no_sorting('userid');
@@ -637,6 +643,13 @@ class assign_grading_table extends table_sql implements renderable {
         $this->get_group_and_submission($row->id, $group, $submission, -1);
         if ($group) {
             return $group->name;
+        } else if ($this->assignment->get_instance()->preventsubmissionnotingroup) {
+            $usergroups = $this->assignment->get_all_groups($row->id);
+            if (count($usergroups) > 1) {
+                return get_string('multipleteamsgrader', 'assign');
+            } else {
+                return get_string('noteamgrader', 'assign');
+            }
         }
         return get_string('defaultteam', 'assign');
     }
@@ -761,6 +774,9 @@ class assign_grading_table extends table_sql implements renderable {
         $selectcol .= '<input type="hidden"
                               name="grademodified_' . $row->userid . '"
                               value="' . $row->timemarked . '"/>';
+        $selectcol .= '<input type="hidden"
+                              name="gradeattempt_' . $row->userid . '"
+                              value="' . $row->attemptnumber . '"/>';
         return $selectcol;
     }
 
@@ -823,7 +839,8 @@ class assign_grading_table extends table_sql implements renderable {
                                             'mod_assign');
             $urlparams = array('id' => $this->assignment->get_course_module()->id,
                                'rownum'=>$this->rownum,
-                               'action'=>'grade');
+                               'action' => 'grade',
+                               'useridlistid' => $this->assignment->get_useridlist_key_id());
             $url = new moodle_url('/mod/assign/view.php', $urlparams);
             $link = $this->output->action_link($url, $icon);
             $grade .= $link . $separator;
@@ -967,7 +984,7 @@ class assign_grading_table extends table_sql implements renderable {
         }
 
         if ($this->is_downloading()) {
-            $o = strip_tags(str_replace('</div>', "\n", $o));
+            $o = strip_tags(rtrim(str_replace('</div>', ' - ', $o), '- '));
         }
 
         return $o;
@@ -988,7 +1005,8 @@ class assign_grading_table extends table_sql implements renderable {
 
         $urlparams = array('id'=>$this->assignment->get_course_module()->id,
                            'rownum'=>$this->rownum,
-                           'action'=>'grade');
+                           'action' => 'grade',
+                           'useridlistid' => $this->assignment->get_useridlist_key_id());
         $url = new moodle_url('/mod/assign/view.php', $urlparams);
         $noimage = null;
 
@@ -1369,6 +1387,16 @@ class assign_grading_table extends table_sql implements renderable {
     }
 
     /**
+     * Always return a valid sort - even if the userid column is missing.
+     * @return array column name => SORT_... constant.
+     */
+    public function get_sort_columns() {
+        $result = parent::get_sort_columns();
+        $result = array_merge($result, array('userid' => SORT_ASC));
+        return $result;
+    }
+
+    /**
      * Override the table show_hide_link to not show for select column.
      *
      * @param string $column the column name, index into various names.
@@ -1380,5 +1408,17 @@ class assign_grading_table extends table_sql implements renderable {
             return parent::show_hide_link($column, $index);
         }
         return '';
+    }
+
+    /**
+     * Overides setup to ensure it will only run a single time.
+     */
+    public function setup() {
+        // Check if the setup function has been called before, we should not run it twice.
+        // If we do the sortorder of the table will be broken.
+        if (!empty($this->setup)) {
+            return;
+        }
+        parent::setup();
     }
 }

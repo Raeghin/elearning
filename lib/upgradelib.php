@@ -371,6 +371,9 @@ function upgrade_stale_php_files_present() {
     global $CFG;
 
     $someexamplesofremovedfiles = array(
+        // Removed in 3.0.
+        '/mod/lti/grade.php',
+        '/tag/coursetagslib.php',
         // Removed in 2.9.
         '/lib/timezone.txt',
         // Removed in 2.8.
@@ -448,15 +451,16 @@ function upgrade_plugins($type, $startcallback, $endcallback, $verbose) {
         require($fullplug.'/version.php');  // defines $plugin with version etc
         unset($module);
 
-        // if plugin tells us it's full name we may check the location
-        if (isset($plugin->component)) {
-            if ($plugin->component !== $component) {
-                throw new plugin_misplaced_exception($plugin->component, null, $fullplug);
-            }
+        if (empty($plugin->version)) {
+            throw new plugin_defective_exception($component, 'Missing $plugin->version number in version.php.');
         }
 
-        if (empty($plugin->version)) {
-            throw new plugin_defective_exception($component, 'Missing version value in version.php');
+        if (empty($plugin->component)) {
+            throw new plugin_defective_exception($component, 'Missing $plugin->component declaration in version.php.');
+        }
+
+        if ($plugin->component !== $component) {
+            throw new plugin_misplaced_exception($plugin->component, null, $fullplug);
         }
 
         $plugin->name     = $plug;
@@ -598,27 +602,33 @@ function upgrade_plugins_modules($startcallback, $endcallback, $verbose) {
             throw new plugin_defective_exception($component, 'Missing version.php');
         }
 
-        // TODO: Support for $module will end with Moodle 2.10 by MDL-43896. Was deprecated for Moodle 2.7 by MDL-43040.
+        $module = new stdClass();
         $plugin = new stdClass();
         $plugin->version = null;
-        $module = $plugin;
         require($fullmod .'/version.php');  // Defines $plugin with version etc.
-        $plugin = clone($module);
+
+        // Check if the legacy $module syntax is still used.
+        if (!is_object($module) or (count((array)$module) > 0)) {
+            throw new plugin_defective_exception($component, 'Unsupported $module syntax detected in version.php');
+        }
+
+        // Prepare the record for the {modules} table.
+        $module = clone($plugin);
         unset($module->version);
         unset($module->component);
         unset($module->dependencies);
         unset($module->release);
 
-        // if plugin tells us it's full name we may check the location
-        if (isset($plugin->component)) {
-            if ($plugin->component !== $component) {
-                throw new plugin_misplaced_exception($plugin->component, null, $fullmod);
-            }
+        if (empty($plugin->version)) {
+            throw new plugin_defective_exception($component, 'Missing $plugin->version number in version.php.');
         }
 
-        if (empty($plugin->version)) {
-            // Version must be always set now!
-            throw new plugin_defective_exception($component, 'Missing version value in version.php');
+        if (empty($plugin->component)) {
+            throw new plugin_defective_exception($component, 'Missing $plugin->component declaration in version.php.');
+        }
+
+        if ($plugin->component !== $component) {
+            throw new plugin_misplaced_exception($plugin->component, null, $fullmod);
         }
 
         if (!empty($plugin->requires)) {
@@ -790,15 +800,16 @@ function upgrade_plugins_blocks($startcallback, $endcallback, $verbose) {
         unset($block->dependencies);
         unset($block->release);
 
-        // if plugin tells us it's full name we may check the location
-        if (isset($plugin->component)) {
-            if ($plugin->component !== $component) {
-                throw new plugin_misplaced_exception($plugin->component, null, $fullblock);
-            }
+        if (empty($plugin->version)) {
+            throw new plugin_defective_exception($component, 'Missing block version number in version.php.');
         }
 
-        if (empty($plugin->version)) {
-            throw new plugin_defective_exception($component, 'Missing block version.');
+        if (empty($plugin->component)) {
+            throw new plugin_defective_exception($component, 'Missing $plugin->component declaration in version.php.');
+        }
+
+        if ($plugin->component !== $component) {
+            throw new plugin_misplaced_exception($plugin->component, null, $fullblock);
         }
 
         if (!empty($plugin->requires)) {
@@ -1536,6 +1547,9 @@ function install_core($version, $verbose) {
         cache_helper::purge_all();
     } catch (exception $ex) {
         upgrade_handle_exception($ex);
+    } catch (Throwable $ex) {
+        // Engine errors in PHP7 throw exceptions of type Throwable (this "catch" will be ignored in PHP5).
+        upgrade_handle_exception($ex);
     }
 }
 
@@ -1606,6 +1620,9 @@ function upgrade_core($version, $verbose) {
         print_upgrade_part_end('moodle', false, $verbose);
     } catch (Exception $ex) {
         upgrade_handle_exception($ex);
+    } catch (Throwable $ex) {
+        // Engine errors in PHP7 throw exceptions of type Throwable (this "catch" will be ignored in PHP5).
+        upgrade_handle_exception($ex);
     }
 }
 
@@ -1639,6 +1656,9 @@ function upgrade_noncore($verbose) {
         purge_all_caches();
 
     } catch (Exception $ex) {
+        upgrade_handle_exception($ex);
+    } catch (Throwable $ex) {
+        // Engine errors in PHP7 throw exceptions of type Throwable (this "catch" will be ignored in PHP5).
         upgrade_handle_exception($ex);
     }
 }
@@ -2330,4 +2350,97 @@ function upgrade_minmaxgrade() {
         $DB->set_field('grade_items', 'needsupdate', 1, array('courseid' => $record->courseid));
     }
     $rs->close();
+}
+
+
+/**
+ * Assert the upgrade key is provided, if it is defined.
+ *
+ * The upgrade key can be defined in the main config.php as $CFG->upgradekey. If
+ * it is defined there, then its value must be provided every time the site is
+ * being upgraded, regardless the administrator is logged in or not.
+ *
+ * This is supposed to be used at certain places in /admin/index.php only.
+ *
+ * @param string|null $upgradekeyhash the SHA-1 of the value provided by the user
+ */
+function check_upgrade_key($upgradekeyhash) {
+    global $CFG, $PAGE;
+
+    if (isset($CFG->config_php_settings['upgradekey'])) {
+        if ($upgradekeyhash === null or $upgradekeyhash !== sha1($CFG->config_php_settings['upgradekey'])) {
+            if (!$PAGE->headerprinted) {
+                $output = $PAGE->get_renderer('core', 'admin');
+                echo $output->upgradekey_form_page(new moodle_url('/admin/index.php', array('cache' => 0)));
+                die();
+            } else {
+                // This should not happen.
+                die('Upgrade locked');
+            }
+        }
+    }
+}
+
+/**
+ * Helper procedure/macro for installing remote plugins at admin/index.php
+ *
+ * Does not return, always redirects or exits.
+ *
+ * @param array $installable list of \core\update\remote_info
+ * @param bool $confirmed false: display the validation screen, true: proceed installation
+ * @param string $heading validation screen heading
+ * @param moodle_url|string|null $continue URL to proceed with installation at the validation screen
+ * @param moodle_url|string|null $return URL to go back on cancelling at the validation screen
+ */
+function upgrade_install_plugins(array $installable, $confirmed, $heading='', $continue=null, $return=null) {
+    global $CFG, $PAGE;
+
+    if (empty($return)) {
+        $return = $PAGE->url;
+    }
+
+    if (!empty($CFG->disableupdateautodeploy)) {
+        redirect($return);
+    }
+
+    if (empty($installable)) {
+        redirect($return);
+    }
+
+    $pluginman = core_plugin_manager::instance();
+
+    if ($confirmed) {
+        // Installation confirmed at the validation results page.
+        if (!$pluginman->install_plugins($installable, true, true)) {
+            throw new moodle_exception('install_plugins_failed', 'core_plugin', $return);
+        }
+
+        // Always redirect to admin/index.php to perform the database upgrade.
+        // Do not throw away the existing $PAGE->url parameters such as
+        // confirmupgrade or confirmrelease if $PAGE->url is a superset of the
+        // URL we must go to.
+        $mustgoto = new moodle_url('/admin/index.php', array('cache' => 0, 'confirmplugincheck' => 0));
+        if ($mustgoto->compare($PAGE->url, URL_MATCH_PARAMS)) {
+            redirect($PAGE->url);
+        } else {
+            redirect($mustgoto);
+        }
+
+    } else {
+        $output = $PAGE->get_renderer('core', 'admin');
+        echo $output->header();
+        if ($heading) {
+            echo $output->heading($heading, 3);
+        }
+        echo html_writer::start_tag('pre', array('class' => 'plugin-install-console'));
+        $validated = $pluginman->install_plugins($installable, false, false);
+        echo html_writer::end_tag('pre');
+        if ($validated) {
+            echo $output->plugins_management_confirm_buttons($continue, $return);
+        } else {
+            echo $output->plugins_management_confirm_buttons(null, $return);
+        }
+        echo $output->footer();
+        die();
+    }
 }
