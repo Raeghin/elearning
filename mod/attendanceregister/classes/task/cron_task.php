@@ -14,18 +14,33 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-
 /**
- * Progress Bar block version details
+ * A scheduled task for attendanceregister cron.
  *
- * @package    contrib
- * @subpackage block_progress
- * @copyright  2010 Michael de Raadt
+ * @package    mod_attendanceregister
+ * @copyright  2016 hsien
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+namespace mod_attendanceregister\task;
 
-$plugin->version   = 2016041500;
-$plugin->requires  = 2010121000;
-$plugin->maturity  = MATURITY_STABLE;
-$plugin->release   = 'Version for Moodle 2.0 onwards';
-$plugin->component = 'block_progress';
+class cron_task extends \core\task\scheduled_task {
+
+    /**
+     * Get a descriptive name for this task (shown to admins).
+     *
+     * @return string
+     */
+    public function get_name() {
+        return get_string('crontask', 'mod_attendanceregister');
+    }
+
+    /**
+     * Run attendanceregister cron.
+     */
+    public function execute() {
+        global $CFG;
+        require_once($CFG->dirroot . '/mod/attendanceregister/lib.php');
+        attendanceregister_cron();
+    }
+
+}

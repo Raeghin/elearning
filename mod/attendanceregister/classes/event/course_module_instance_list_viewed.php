@@ -1,6 +1,5 @@
 <?php
-
-// This file is part of the Certificate module for Moodle - http://moodle.org/
+// This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -16,19 +15,24 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Code fragment to define the version of the certificate module
+ * The mod_attendanceregister instance list viewed event.
  *
- * @package    mod_certificate
- * @copyright  Mark Nelson <markn@moodle.com>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or late
+ * @package    mod_attendanceregister
+ * @copyright  2016 hsien
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace mod_attendanceregister\event;
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2015120601; // The current module version (Date: YYYYMMDDXX)
-$plugin->requires  = 2015111600; // Requires this Moodle version
-$plugin->cron      = 0; // Period for cron to check this module (secs)
-$plugin->component = 'mod_certificate';
+/**
+ * The mod_chat instance list viewed event class.
+ *
+ * @package    mod_attendanceregister
+ * @since      Moodle 2.7
+ * @copyright  2016 hsien
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class course_module_instance_list_viewed extends \core\event\course_module_instance_list_viewed {
+}
 
-$plugin->maturity  = MATURITY_STABLE;
-$plugin->release   = "Master (Build: 2015120601)"; // User-friendly version number
