@@ -1,4 +1,4 @@
-The Progress Bar is a time-management tool for students.
+TheProgress Bar is a time-management tool for students.
 It visually shows what activities/resources a student is supposed to interact with in a course.
 It is colour coded so students can quickly see what they have and have not completed/viewed.
 The teacher selects which pre-existing activities/resources are to be included in the Progress
