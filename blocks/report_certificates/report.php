@@ -16,11 +16,11 @@
 
 /**
  * Version details
- * 
+ *
  * Report certificates block
  * --------------------------
- * Displays all issued certificates for users with unique codes. 
- * The certificates will also be issued for courses that have been archived since issuing of the certificates 
+ * Displays all issued certificates for users with unique codes.
+ * The certificates will also be issued for courses that have been archived since issuing of the certificates
  *
  * @copyright  2015 onwards Manieer Chhettri | Marie Curie, UK | <manieer@gmail.com>
  * @author     Manieer Chhettri | Marie Curie, UK | <manieer@gmail.com> | 2015
@@ -50,6 +50,7 @@ $PAGE->set_url($url);
 
         $table = new html_table();
         $table->head = array(get_string('report_certificates_tblheader_coursename', 'block_report_certificates'),
+                             get_string('report_certificates_tblheader_grade', 'block_report_certificates'),
                              get_string('report_certificates_tblheader_code', 'block_report_certificates'),
                              get_string('report_certificates_tblheader_issuedate', 'block_report_certificates'),
                              get_string('report_certificates_tblheader_download', 'block_report_certificates'));
@@ -83,12 +84,12 @@ $PAGE->set_url($url);
         // PDF FILES ONLY (f.mimetype = 'application/pdf').
         $certificates = $DB->get_records_sql($sql, array('userid' => $USER->id));
 
-if (!$certificates) {
-    print_error(get_string('notissuedyet', 'certificate'));
+        if (!$certificates) {
+            print_error(get_string('notissuedyet', 'certificate'));
 
-} else {
+        } else {
 
-    foreach ($certificates as $certdata) {
+            foreach ($certificates as $certdata) {
 
                 $certdata->printdate = 1; // Modify printdate so that date is always printed.
                 $certrecord = new stdClass();
@@ -107,26 +108,28 @@ if (!$certificates) {
                 $code = $certrecord->code = $certdata->code;
 
                 // Retrieving grade and date for each certificate.
+                $grade = certificate_get_grade($certdata, $certrecord, $userid, $valueonly = true);
                 $date = $certrecord->timecreated = $certdata->citimecreated;
 
-        // Direct course link.
-        $link = html_writer::link(new moodle_url('/course/view.php', array('id' => $courseid)),
+                // Direct course link.
+                $link = html_writer::link(new moodle_url('/course/view.php', array('id' => $courseid)),
                 $coursename, array('fullname' => $coursename));
 
-        // Direct certificate download link.
-        $filelink = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$contextid.'/mod_certificate/issue/'
-                 .$certificateid.'/'.$filename);
+                // Direct certificate download link.
+                $filelink = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$contextid.'/mod_certificate/issue/'
+                .$certificateid.'/'.$filename);
 
-        $outputlink = '<a href="'.$filelink.'" >'
+                $outputlink = '<a href="'.$filelink.'" >'
                     .'<img src="../report_certificates/pix/download.png" alt="Please download"'
-                    .'width="100px" height="29px">'
+                    .'width="25px" height="25px">'
                     .'</a>';
 
-        $table->data[] = array ($link,  $code, userdate($date, $dateformat), $outputlink);
+                $table->data[] = array ($link,  $grade, $code, userdate($date, $dateformat), $outputlink);
 
-    }
-    echo $OUTPUT->heading(get_string('report_certificates_heading', 'block_report_certificates'));
-    echo '<br />';
-    echo html_writer::table($table);
-}
-echo $OUTPUT->footer();
+            }
+                echo $OUTPUT->heading(get_string('report_certificates_heading', 'block_report_certificates'));
+                echo '<br />';
+                echo html_writer::table($table);
+        }
+
+        echo $OUTPUT->footer();

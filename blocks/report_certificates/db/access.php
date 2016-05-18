@@ -16,11 +16,11 @@
 
 /**
  * Version details
- * 
+ *
  * Report certificates block
  * --------------------------
- * Displays all issued certificates for users with unique codes. 
- * The certificates will also be issued for courses that have been archived since issuing of the certificates 
+ * Displays all issued certificates for users with unique codes.
+ * The certificates will also be issued for courses that have been archived since issuing of the certificates
  *
  * @copyright  2015 onwards Manieer Chhettri | Marie Curie, UK | <manieer@gmail.com>
  * @author     Manieer Chhettri | Marie Curie, UK | <manieer@gmail.com> | 2015

@@ -16,11 +16,11 @@
 
 /**
  * Version details
- * 
+ *
  * Report certificates block
  * --------------------------
- * Displays all issued certificates for users with unique codes. 
- * The certificates will also be issued for courses that have been archived since issuing of the certificates 
+ * Displays all issued certificates for users with unique codes.
+ * The certificates will also be issued for courses that have been archived since issuing of the certificates
  *
  * @copyright  2015 onwards Manieer Chhettri | Marie Curie, UK | <manieer@gmail.com>
  * @author     Manieer Chhettri | Marie Curie, UK | <manieer@gmail.com> | 2015
@@ -28,17 +28,17 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['pluginname'] = 'Download Certificates';
-$string['report_certificates'] = 'Download Certificates';
-$string['report_certificates_tblheader_coursename'] = 'Course Name';
+$string['pluginname'] = 'Download certificates';
+$string['report_certificates'] = 'Download certificates';
+$string['report_certificates_tblheader_coursename'] = 'Course name';
 $string['report_certificates_tblheader_grade'] = 'Grade';
 $string['report_certificates_tblheader_code'] = 'Code';
-$string['report_certificates_tblheader_issuedate'] = 'Date Issued';
-$string['report_certificates_tblheader_download'] = 'Download Link';
+$string['report_certificates_tblheader_issuedate'] = 'Date issued';
+$string['report_certificates_tblheader_download'] = 'Download';
 $string['report_certificates_yourcertificate'] = 'Your certificate - please download';
-$string['report_certificates_footermessage'] = 'All My Certificates';
+$string['report_certificates_footermessage'] = 'All my certificates';
 $string['report_certificates_noreports'] = 'You do not have any certificates issued to you.';
-$string['report_certificates_heading'] = 'All Previously Issued Certificates';
+$string['report_certificates_heading'] = 'All previously issued certificates';
 $string['report_certificates_modulenameplural'] = 'Certificates';
 $string['report_certificates:addinstance'] = 'Add a new report certificates block';
 $string['report_certificates:myaddinstance'] = 'Add a new report certificates block to the My Moodle page';

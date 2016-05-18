@@ -16,11 +16,12 @@
 
 /**
  * Version details
- * 
+ *
  * Report certificates block
  * --------------------------
- * Displays all issued certificates for users with unique codes. 
- * The certificates will also be issued for courses that have been archived since issuing of the certificates 
+ * Displays all issued certificates for users with unique codes.
+ * The certificates will also be issued for courses that have been archived
+ * since issuing of the certificates.
  *
  * @copyright  2015 onwards Manieer Chhettri | Marie Curie, UK | <manieer@gmail.com>
  * @author     Manieer Chhettri | Marie Curie, UK | <manieer@gmail.com> | 2015
@@ -33,31 +34,29 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot.'/mod/certificate/locallib.php');
 
 /**
- * 
+ *
  * Report previously issued certificates.
- * 
  * Displays all previously issued certificatesfor logged in user.
- * 
  * @copyright 2015 onwards Manieer Chhettri | Marie Curie, UK | <manieer@gmail.com>.
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class block_report_certificates extends block_base {
 
     /**
-     * 
+     *
      * Report previously issued certificates.
-     * 
+     *
      * Displays all previously issued certificatesfor logged in user.
      */
     public function init() {
         $this->title   = get_string('report_certificates', 'block_report_certificates');
-        $this->version = 2015070100;
+        $this->version = 2015071500;
     }
 
     /**
-     * 
+     *
      * Retrieving relevant required data.
-     * 
+     *
      * Retrieving data and populating them for displaying on the block.
      */
     public function get_content() {
@@ -77,12 +76,6 @@ class block_report_certificates extends block_base {
 
         // Table headers.
         $table = new html_table();
-        $table->head = array(get_string('report_certificates_tblheader_coursename', 'block_report_certificates'),
-                             get_string('report_certificates_tblheader_code', 'block_report_certificates'),
-                             get_string('report_certificates_tblheader_issuedate', 'block_report_certificates'),
-                             get_string('report_certificates_tblheader_download', 'block_report_certificates'));
-        $table->align = array ("left", "center", "center", "center", "center");
-
         $sql = "SELECT DISTINCT ci.id AS certificateid, ci.userid, ci.code AS code,
                                 ci.timecreated AS citimecreated,
                                 crt.name AS certificatename, crt.*,
@@ -136,29 +129,29 @@ class block_report_certificates extends block_base {
                 $code = $certrecord->code = $certdata->code;
 
                 // Retrieving grade and date for each certificate.
+                $grade = certificate_get_grade($certdata, $certrecord, $userid, $valueonly = true);
                 $date = $certrecord->timecreated = $certdata->citimecreated;
 
                 // Direct course link.
                 $link = html_writer::link(new moodle_url('/course/view.php', array('id' => $courseid)),
-                $coursename, array('fullname' => $coursename));
+                "<strong>" . $coursename . "</strong>", array('fullname' => $coursename))  . "<br>[<em>" . " Issued on: "
+                . userdate($date, $dateformat) . " | Grade: " . $grade . " | Code: " . $code . " </em>]";
 
                 // Direct certificate download link.
                 $filelink = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'
                             .$contextid.'/mod_certificate/issue/'
                             .$certificateid.'/'.$filename);
 
-                 $outputlink = '<a href="'.$filelink.'" >'
+                $outputlink = '<a href="'.$filelink.'" >'
                       .'<img src="../blocks/report_certificates/pix/download.png" alt="Please download"'
-                      .'width="100px" height="29px">'
+                      .'width="35px" height="35px">'
                       .'</a>';
 
-                 $table->data[] = array ($link, $code, userdate($date, $dateformat), $outputlink);
-
+                $table->data[] = array ($link, $outputlink);
             }
 
-                 $this->content->footer = html_writer::link(new moodle_url('/blocks/report_certificates/report.php',
-                                 array('userid' => $USER->id)),
-                                 get_string('report_certificates_footermessage', 'block_report_certificates'));
+            $this->content->footer = html_writer::link(new moodle_url('/blocks/report_certificates/report.php',
+            array('userid' => $USER->id)), get_string('report_certificates_footermessage', 'block_report_certificates'));
         }
 
         $this->content->text = html_writer::table($table);
