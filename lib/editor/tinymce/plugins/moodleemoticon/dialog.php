@@ -40,7 +40,7 @@ header('Content-Type: text/html; charset=utf-8');
 header('X-UA-Compatible: IE=edge');
 ?>
 <!DOCTYPE html>
-<html <?php echo $htmllang ?>
+<html <?php echo $htmllang ?> >
 <head>
     <title><?php print_string('moodleemoticon:desc', 'tinymce_moodleemoticon'); ?></title>
     <script type="text/javascript" src="<?php echo $editor->get_tinymce_base_url(); ?>/tiny_mce_popup.js"></script>
