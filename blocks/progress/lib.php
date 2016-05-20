@@ -1777,7 +1777,7 @@ function block_progress_get_coursemodule($module, $recordid, $courseid, $userid 
 }
 
 function block_progress_get_timespent($userid, $simple = true, $courseid) {
-	$limit = 3600;
+	$limit = 5400;
 	$ignore = 59;
 	
 	$where = 'courseid = :courseid AND userid = :userid';
