@@ -198,15 +198,18 @@ echo html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'return
 // Setup submissions table.
 $table = new flexible_table('mod-block-progress-overview');
 $table->pagesize($perpage, $numberofusers);
-$tablecolumns = array('select', 'picture', 'fullname', 'lastonline', 'progressbar', 'progress');
+$tablecolumns = array('select', 'picture', 'fullname', 'lastonline', 'certificate', 'timespent', 'progressbar', 'progress');
 $table->define_columns($tablecolumns);
 $tableheaders = array(
                   '',
                   '',
                   get_string('fullname'),
                   get_string('lastonline', 'block_progress'),
+					get_string('certificate', 'block_progress'),
+		get_string('timespent', 'block_progress'),
                   get_string('progressbar', 'block_progress'),
-                  get_string('progress', 'block_progress')
+					get_string('progress', 'block_progress')
+				  
                 );
 $table->define_headers($tableheaders);
 $table->sortable(true);
@@ -226,6 +229,8 @@ $table->column_style('progressbar', 'width', '*');
 $table->column_style('progressbar', 'padding', '0');
 $table->column_style('progress', 'text-align', 'center');
 $table->column_style('progress', 'width', '8%');
+$table->column_style('certificate', 'width', '10%');
+$table->column_style('timespent', 'width', '10%');
 
 $table->no_sorting('select');
 $select = '';
@@ -277,7 +282,20 @@ for ($i = $startuser; $i < $enduser; $i++) {
         $progressvalue = 0;
         $progress = '?';
     }
-
+    
+	//Get certificate code
+    $certificate = getcertificatecode($course->id, $users[$i]->id);
+    
+    if($certificate->id > 0)
+    	$certificate_url = new moodle_url($certificate->filelink);
+    else
+    	$certificate_url = "#";
+    	
+    
+    $certificatelink = html_writer::link($certificate_url, $certificate->id > 0 ? $certificate->code : get_string('nocertificate', 'block_progress'));
+    
+    $timespent = utils::format_timespend(block_progress_get_timespent($users[$i]->id, true, $course->id));
+    
     $rows[] = array(
         'firstname' => $users[$i]->firstname,
         'lastname' => strtoupper($users[$i]->lastname),
@@ -286,6 +304,8 @@ for ($i = $startuser; $i < $enduser; $i++) {
         'fullname' => $namelink,
         'lastonlinetime' => $users[$i]->lastonlinetime,
         'lastonline' => $lastonline,
+    	'certificate' => $certificatelink,
+    	'timespent' => $timespent,	
         'progressbar' => $progressbar,
         'progressvalue' => $progressvalue,
         'progress' => $progress
@@ -299,8 +319,9 @@ if ($sortbyprogress) {
 if ($numberofusers > 0) {
     foreach ($rows as $row) {
         $table->add_data(array($row['select'], $row['picture'],
-            $row['fullname'], $row['lastonline'],
+            $row['fullname'], $row['lastonline'], $row['certificate'],$row['timespent'],
             $row['progressbar'], $row['progress']));
+        
     }
 }
 $table->print_html();

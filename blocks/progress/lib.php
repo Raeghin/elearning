@@ -1775,3 +1775,273 @@ function block_progress_get_coursemodule($module, $recordid, $courseid, $userid 
         return get_coursemodule_from_instance($module, $recordid, $courseid);
     }
 }
+
+function block_progress_get_timespent($userid, $simple = true, $courseid) {
+	$limit = 900;
+	$ignore = 59;
+	
+	$where = 'courseid = :courseid AND userid = :userid';
+	$params = array(
+			'courseid' => $courseid,
+			'userid' => $userid
+	);
+	$logs = utils::get_events_select($where, $params);
+
+	if ($simple) {
+		// Return total timespend time in seconds
+		$total = 0;
+		
+		
+		if ($logs) {
+			$previouslog = array_shift($logs);
+			$previouslogtime = $previouslog->time;
+			$sessionstart = $previouslogtime;
+
+			foreach ($logs as $log) {
+				if (($log->time - $previouslogtime) > $limit) {
+					$timespend = $previouslogtime - $sessionstart;
+					$total += $timespend;
+					$sessionstart = $log->time;
+				}
+				$previouslogtime = $log->time;
+			}
+			$timespend = $previouslogtime - $sessionstart;
+			$total += $timespend;
+		}
+
+		return $total;
+
+	} else {
+		// Return user sessions with details
+		$rows = array();
+
+		if ($logs) {
+			$previouslog = array_shift($logs);
+			$previouslogtime = $previouslog->time;
+			$sessionstart = $previouslogtime;
+			$ips = array($previouslog->ip => true);
+
+			foreach ($logs as $log) {
+				if (($log->time - $previouslogtime) > $limit) {
+					$timespend = $previouslogtime - $sessionstart;
+
+					// Ignore sessions with a really short duration
+					if ($timespend > $ignore) {
+						$rows[] = (object) array('start_date' => $sessionstart, 'timespendtime' => $timespend, 'ips' => array_keys($ips));
+						$ips = array();
+					}
+					$sessionstart = $log->time;
+				}
+				$previouslogtime = $log->time;
+				$ips[$log->ip] = true;
+			}
+
+			$timespend = $previouslogtime - $sessionstart;
+
+			// Ignore sessions with a really short duration
+			if ($timespend > $ignore) {
+				$rows[] = (object) array('start_date' => $sessionstart, 'timespendtime' => $timespend, 'ips' => array_keys($ips));
+			}
+		}
+
+		return $rows;
+	}
+}
+
+function getcertificatecode($courseid, $userid)
+{
+	global $DB, $CFG;
+	$sql = "SELECT DISTINCT ci.id AS certificateid, ci.userid, ci.code AS code,
+                                ci.timecreated AS citimecreated,
+                                crt.name AS certificatename, crt.*,
+                                cm.id AS coursemoduleid, cm.course, cm.module,
+                                c.id AS id, c.fullname AS fullname, c.*,
+				                ctx.id AS contextid, ctx.instanceid AS instanceid,
+				                f.itemid AS itemid, f.filename AS filename
+                           FROM {certificate_issues} ci
+                     INNER JOIN {certificate} crt
+                             ON crt.id = ci.certificateid
+                     INNER JOIN {course_modules} cm
+                             ON cm.course = crt.course
+                     INNER JOIN {course} c
+                             ON c.id = cm.course
+                     INNER JOIN {context} ctx
+                             ON ctx.instanceid = cm.id
+                     INNER JOIN {files} f
+                             ON f.contextid = ctx.id
+                          WHERE ctx.contextlevel = 70 AND
+                                f.mimetype = 'application/pdf' AND
+                                ci.userid = f.userid AND
+                                ci.userid = :userid AND
+                                c.id = :courseid
+                       GROUP BY ci.code
+                       ORDER BY ci.timecreated ASC";
+
+	$certificates = $DB->get_records_sql($sql, array('userid' => $userid, 'courseid' => $courseid));
+
+	if (empty($certificates)) {
+		$certificate = new stdClass();
+		$certificate->id = 0;
+		$certificate->code = 0;
+		$certificate->filelink = '';
+		return $certificate;
+	} else {
+		foreach ($certificates as $certdata) {
+			$certificate = new stdClass();
+
+			$certificate->timecreated = $certdata->citimecreated;
+			$certificate->id = $certdata->certificateid;
+			$certificate->code = $certdata->code;
+
+			$contextid = $certdata->contextid;
+			$filename = $certdata->filename;
+
+			$certificate->filelink = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'
+					.$contextid.'/mod_certificate/issue/'
+					.$certificate->id.'/'.$filename);
+
+			return $certificate;
+		}
+	}
+
+	return $this->content;
+}
+
+// Utils functions used by block timespend
+class utils {
+
+    public static $LOGSTORES = array('logstore_standard', 'logstore_legacy');
+
+    // Return formatted events from logstores
+    public static function get_events_select($selectwhere, array $params) {
+        $return = array();
+
+        static $allreaders = NULL;
+
+        if (is_null($allreaders)) {
+            $allreaders = get_log_manager()->get_readers();
+        }
+
+        $processed_readers = 0;
+
+        foreach (self::$LOGSTORES as $name) {
+            if (isset($allreaders[$name])) {
+                $reader = $allreaders[$name];
+                $events = $reader->get_events_select($selectwhere, $params, 'timecreated ASC', 0, 0);
+                foreach ($events as $event) {
+                    // Note: see \core\event\base to view base class of event
+                    $obj = new stdClass();
+                    $obj->time = $event->timecreated;
+                    $obj->ip = $event->get_logextra()['ip'];
+                    $return[] = $obj;
+                }
+                if (!empty($events)) {
+                    $processed_readers++;
+                }
+            }
+        }
+
+        // Sort mixed array by time ascending again only when more of a reader has added events to return array
+        if ($processed_readers > 1) {
+            usort($return, function($a, $b) { return $a->time > $b->time; });
+        }
+
+        return $return;
+    }
+
+    // Formats time based in Moodle function format_time($totalsecs)
+    public static function format_timespend($totalsecs) {
+        $totalsecs = abs($totalsecs);
+
+        $str = new stdClass();
+        $str->hour = get_string('hour');
+        $str->hours = get_string('hours');
+        $str->min = get_string('min');
+        $str->mins = get_string('mins');
+        $str->sec = get_string('sec');
+        $str->secs = get_string('secs');
+
+        $hours = floor($totalsecs / HOURSECS);
+        $remainder = $totalsecs - ($hours * HOURSECS);
+        $mins = floor($remainder / MINSECS);
+        $secs = $remainder - ($mins * MINSECS);
+
+        $ss = ($secs == 1) ? $str->sec : $str->secs;
+        $sm = ($mins == 1) ? $str->min : $str->mins;
+        $sh = ($hours == 1) ? $str->hour : $str->hours;
+
+        $ohours = '';
+        $omins = '';
+        $osecs = '';
+
+        if ($hours)
+            $ohours = $hours . ' ' . $sh;
+        if ($mins)
+            $omins = $mins . ' ' . $sm;
+        if ($secs)
+            $osecs = $secs . ' ' . $ss;
+
+        if ($hours)
+            return trim($ohours . ' ' . $omins);
+        if ($mins)
+            return trim($omins . ' ' . $osecs);
+        if ($secs)
+            return $osecs;
+        return get_string('none');
+    }
+
+    // Formats ips
+    public static function format_ips($ips) {
+        return implode(', ', array_map('block_timespend_utils::link_ip', $ips));
+    }
+
+    // Generates an linkable ip
+    public static function link_ip($ip) {
+        return html_writer::link("http://en.utrace.de/?query=$ip", $ip, array('target' => '_blank'));
+    }
+
+    // Table styles
+    public static function get_table_styles() {
+        global $PAGE;
+
+        // Twitter Bootstrap styling
+        if (in_array('bootstrapbase', $PAGE->theme->parents)) {
+            $styles = array(
+                'table_class' => 'table table-striped table-bordered table-hover table-condensed table-timespend',
+                'header_style' => 'background-color: #333; color: #fff;'
+            );
+        } else {
+            $styles = array(
+                'table_class' => 'table-timespend',
+                'header_style' => ''
+            );
+        }
+
+        return $styles;
+    }
+
+    // Generates generic Excel file for download
+    public static function generate_download($download_name, $rows) {
+        global $CFG;
+
+        require_once($CFG->libdir . '/excellib.class.php');
+
+        $workbook = new MoodleExcelWorkbook('-', 'excel5');
+        $workbook->send(clean_filename($download_name));
+
+        $myxls = $workbook->add_worksheet(get_string('pluginname', 'block_timespend'));
+
+        $row_count = 0;
+        foreach ($rows as $row) {
+            foreach ($row as $index => $content) {
+                $myxls->write($row_count, $index, $content);
+            }
+            $row_count++;
+        }
+
+        $workbook->close();
+
+        return $workbook;
+    }
+
+}

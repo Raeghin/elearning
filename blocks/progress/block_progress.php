@@ -264,13 +264,21 @@ class block_progress extends block_base {
             }
             $blockinstancesonpage = array($this->instance->id);
 
+            $this->content->text .= '<hr />';
+            
+            $timespent = block_progress_get_timespent($USER->id, true, $COURSE->id);
+            $this->content->text .= html_writer::tag('p', get_string('timespent','block_progress'));
+            $this->content->text .= html_writer::tag('p', utils::format_timespend($timespent));
+            
+            $this->content->text .= '<hr />';
+            
             // Allow teachers to access the overview page.
             if (has_capability('block/progress:overview', $this->context)) {
-                $parameters = array('progressbarid' => $this->instance->id, 'courseid' => $COURSE->id);
-                $url = new moodle_url('/blocks/progress/overview.php', $parameters);
-                $label = get_string('overview', 'block_progress');
-                $options = array('class' => 'overviewButton');
-                $this->content->text .= $OUTPUT->single_button($url, $label, 'post', $options);
+            	$parameters = array('progressbarid' => $this->instance->id, 'courseid' => $COURSE->id);
+            	$url = new moodle_url('/blocks/progress/overview.php', $parameters);
+            	$label = get_string('overview', 'block_progress');
+            	$options = array('class' => 'overviewButton');
+            	$this->content->text .= $OUTPUT->single_button($url, $label, 'post', $options);
             }
         }
 
