@@ -1778,7 +1778,7 @@ function block_progress_get_coursemodule($module, $recordid, $courseid, $userid 
 
 function block_progress_get_timespent($userid, $simple = true, $courseid) {
 	$limit = 5400;
-	$ignore = 59;
+	$ignore = 1;
 	
 	$where = 'courseid = :courseid AND userid = :userid';
 	$params = array(
@@ -1843,7 +1843,6 @@ function block_progress_get_timespent($userid, $simple = true, $courseid) {
 				$rows[] = (object) array('start_date' => $sessionstart, 'timespendtime' => $timespend, 'ips' => array_keys($ips));
 			}
 		}
-
 		return $rows;
 	}
 }

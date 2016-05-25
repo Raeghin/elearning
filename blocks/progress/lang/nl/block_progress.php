@@ -26,3 +26,8 @@
 $string['timespent'] = 'Tijd gespendeerd in de cursus:';
 $string['certificate'] = 'Certificaat code';
 $string['nocertificate'] = 'Niet behaald';
+$string['details'] = 'Details';
+$string['student_details'] = 'Tijdsoverzicht van {$a}';
+$string['start'] = 'Start';
+$string['end'] = 'Einde';
+$string['time'] = 'Tijd';
