@@ -14,9 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-
 /**
- * Progress Bar block version details
+ * Progress Bar block English language translation
  *
  * @package    contrib
  * @subpackage block_progress
@@ -24,11 +23,11 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$plugin->version   = 2016051400;
-$plugin->requires  = 2010121000;
-$plugin->maturity  = MATURITY_STABLE;
-$plugin->release   = 'Version for Moodle 2.0 onwards';
-$plugin->component = 'block_progress';
-$plugin->dependencies = array(
-		'mod_certificate' => 2014041801
-);
+$string['timespent'] = 'Tijd gespendeerd in de cursus:';
+$string['certificate'] = 'Certificaat code';
+$string['nocertificate'] = 'Niet behaald';
+$string['details'] = 'Details';
+$string['student_details'] = 'Tijdsoverzicht van {$a}';
+$string['start'] = 'Start';
+$string['end'] = 'Einde';
+$string['time'] = 'Tijd';

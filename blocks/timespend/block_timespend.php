@@ -39,7 +39,9 @@ class block_timespend extends block_base {
             $maxtime = time();
             $dm = new block_timespend_manager($this->page->course, $mintime, $maxtime, $this->config->limit);
             $timespend_time = $dm->get_user_timespend($USER, true);
+            
             $this->content->text .= html_writer::tag('p', get_string('timespend_estimation', 'block_timespend'));
+            
             $this->content->text .= html_writer::tag('p', block_timespend_utils::format_timespend($timespend_time));
         }
 

@@ -40,7 +40,7 @@ class block_TIMESPEND_manager {
         $this->maxtime = $maxtime;
         $this->limit = $limit;
     }
-
+	
     public function get_students_timespend($students) {
         global $DB;
 

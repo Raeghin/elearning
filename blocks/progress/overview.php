@@ -198,15 +198,18 @@ echo html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'return
 // Setup submissions table.
 $table = new flexible_table('mod-block-progress-overview');
 $table->pagesize($perpage, $numberofusers);
-$tablecolumns = array('select', 'picture', 'fullname', 'lastonline', 'progressbar', 'progress');
+$tablecolumns = array('select', 'fullname', 'lastonline', 'certificate', 'timespent', 'progressbar', 'progress', 'details');
 $table->define_columns($tablecolumns);
 $tableheaders = array(
                   '',
-                  '',
-                  get_string('fullname'),
-                  get_string('lastonline', 'block_progress'),
-                  get_string('progressbar', 'block_progress'),
-                  get_string('progress', 'block_progress')
+                  	get_string('fullname'),
+                 	get_string('lastonline', 'block_progress'),
+					get_string('certificate', 'block_progress'),
+					get_string('timespent', 'block_progress'),
+                  	get_string('progressbar', 'block_progress'),
+					get_string('progress', 'block_progress'),
+					get_string('details', 'block_progress')
+				  
                 );
 $table->define_headers($tableheaders);
 $table->sortable(true);
@@ -218,7 +221,6 @@ $table->column_style_all('vertical-align', 'middle');
 $table->column_style('select', 'text-align', 'right');
 $table->column_style('select', 'padding', '5px 0 5px 5px');
 $table->column_style('select', 'width', '5%');
-$table->column_style('picture', 'width', '5%');
 $table->column_style('fullname', 'width', '10%');
 $table->column_style('lastonline', 'width', '10%');
 $table->column_style('progressbar', 'min-width', '200px');
@@ -226,6 +228,9 @@ $table->column_style('progressbar', 'width', '*');
 $table->column_style('progressbar', 'padding', '0');
 $table->column_style('progress', 'text-align', 'center');
 $table->column_style('progress', 'width', '8%');
+$table->column_style('certificate', 'width', '10%');
+$table->column_style('timespent', 'width', '10%');
+$table->column_style('details', 'width', '5%');
 
 $table->no_sorting('select');
 $select = '';
@@ -258,7 +263,6 @@ for ($i = $startuser; $i < $enduser; $i++) {
         $selectattributes = array('type' => 'checkbox', 'class' => 'usercheckbox', 'name' => 'user'.$users[$i]->id);
         $select = html_writer::empty_tag('input', $selectattributes);
     }
-    $picture = $OUTPUT->user_picture($users[$i], array('course' => $course->id));
     $namelink = html_writer::link($CFG->wwwroot.'/user/view.php?id='.$users[$i]->id.'&course='.$course->id, fullname($users[$i]));
     if (empty($users[$i]->lastonlinetime)) {
         $lastonline = get_string('never');
@@ -277,18 +281,37 @@ for ($i = $startuser; $i < $enduser; $i++) {
         $progressvalue = 0;
         $progress = '?';
     }
-
+    
+	//Get certificate code
+    $certificate = getcertificatecode($course->id, $users[$i]->id);
+    
+    if($certificate->id > 0)
+    	$certificate_url = new moodle_url($certificate->filelink);
+    else
+    	$certificate_url = "#";
+    
+    $certificatelink = html_writer::link($certificate_url, $certificate->id > 0 ? $certificate->code : get_string('nocertificate', 'block_progress'));
+    
+    $timespent = utils::format_timespend(block_progress_get_timespent($users[$i]->id, true, $course->id));
+    
+    $soobparameters = array('userid' => $users[$i]->id, 'courseid' => $COURSE->id, 'id' => $id);
+    $soobdetailslink = new moodle_url('/blocks/progress/overviewdetails.php', $soobparameters);
+    $soobdetailsicon = $OUTPUT->pix_icon('calendar', 'details', 'block_progress', array('class' => 'nowicon'));
+    $details = HTML_WRITER::link($soobdetailslink, $soobdetailsicon);
+    
     $rows[] = array(
         'firstname' => $users[$i]->firstname,
         'lastname' => strtoupper($users[$i]->lastname),
         'select' => $select,
-        'picture' => $picture,
         'fullname' => $namelink,
         'lastonlinetime' => $users[$i]->lastonlinetime,
         'lastonline' => $lastonline,
-        'progressbar' => $progressbar,
+    	'certificate' => $certificatelink,
+    	'timespent' => $timespent,
+    	'progressbar' => $progressbar,
         'progressvalue' => $progressvalue,
-        'progress' => $progress
+        'progress' => $progress,
+    	'details' => $details
     );
 }
 
@@ -298,9 +321,10 @@ if ($sortbyprogress) {
 }
 if ($numberofusers > 0) {
     foreach ($rows as $row) {
-        $table->add_data(array($row['select'], $row['picture'],
-            $row['fullname'], $row['lastonline'],
-            $row['progressbar'], $row['progress']));
+        $table->add_data(array($row['select'], 
+            $row['fullname'], $row['lastonline'], $row['certificate'],$row['timespent'],
+            $row['progressbar'], $row['progress'], $row['details']));
+        
     }
 }
 $table->print_html();
