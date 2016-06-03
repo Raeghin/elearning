@@ -40,6 +40,7 @@ $courseid = required_param('courseid', PARAM_INT);
 $page     = optional_param('page', 0, PARAM_INT); // Which page to show.
 $perpage  = optional_param('perpage', DEFAULT_PAGE_SIZE, PARAM_INT); // How many per page.
 $group    = optional_param('group', 0, PARAM_INT); // Group selected.
+$showinactive    = optional_param('active', 1, PARAM_INT);
 
 // Determine course and context.
 $course = $DB->get_record('course', array('id' => $courseid), '*', MUST_EXIST);
@@ -61,6 +62,7 @@ $PAGE->set_url(
         'page' => $page,
         'perpage' => $perpage,
         'group' => $group,
+    	'active' => $showinactive,
     )
 );
 $PAGE->set_context($context);
@@ -97,7 +99,7 @@ if ($events == null) {
     die();
 }
 if (empty($events)) {
-    echo get_string('no_visible_events_message', 'block_progress');
+    echo get_string('no_visible_events_message', 'block_progress').'&nbsp;';
     echo $OUTPUT->container_end();
     echo $OUTPUT->footer();
     die();
@@ -139,9 +141,27 @@ if (!empty($groups)) {
         $group = 0;
         $PAGE->url->param('group', $group);
     }
-    echo get_string('groupsvisible');
-    echo $OUTPUT->single_select($PAGE->url, 'group', $groupstodisplay, $group);
+    echo get_string('groupsvisible').'&nbsp;';
+    echo $OUTPUT->single_select($PAGE->url, 'group', $groupstodisplay, $group);   
 }
+echo $OUTPUT->container_end();
+
+echo $OUTPUT->container_start('progressoverviewmenus');
+$showexpiredusers = array(0 => get_string('yes'), 1 => get_string('no'));
+echo get_string('showinactiveusers', 'block_progress').'&nbsp;';
+echo $OUTPUT->single_select($PAGE->url, 'active', $showexpiredusers, $showinactive);
+
+// echo $showinactive;
+// if($showinactive == 2)
+// {
+	
+// 	$mform = $this->_form;
+// 	$mform->addElement('date_time_selector', 'assesstimestart', get_string('from')); 
+// 	echo '22';
+// }
+
+
+echo $OUTPUT->container_end();
 
 // Output the roles menu.
 $sql = "SELECT DISTINCT r.id, r.name, r.shortname
@@ -154,7 +174,8 @@ $rolestodisplay = array(0 => get_string('allparticipants'));
 foreach ($roles as $role) {
     $rolestodisplay[$role->id] = $role->localname;
 }
-echo '&nbsp;'.get_string('role');
+echo $OUTPUT->container_start('progressoverviewmenus');
+echo get_string('role').'&nbsp;';
 echo $OUTPUT->single_select($PAGE->url, 'role', $rolestodisplay, $roleselected);
 echo $OUTPUT->container_end();
 
@@ -170,17 +191,31 @@ if ($group && $group != 0) {
 
 // Get the list of users enrolled in the course.
 $picturefields = user_picture::fields('u');
-$sql = "SELECT DISTINCT $picturefields, COALESCE(l.timeaccess, 0) AS lastonlinetime
+$sql2 = "SELECT DISTINCT $picturefields, COALESCE(l.timeaccess, 0) AS lastonlinetime
           FROM {user} u
           JOIN {role_assignments} a ON (a.contextid = :contextid AND a.userid = u.id $rolewhere)
           $groupjoin
      LEFT JOIN {user_lastaccess} l ON (l.courseid = :courseid AND l.userid = u.id)";
+
+$sql = "SELECT DISTINCT $picturefields, COALESCE(l.timeaccess, 0) AS lastonlinetime
+		FROM {user} u 
+		JOIN {role_assignments} a ON (a.contextid = :contextid AND a.userid = u.id $rolewhere)
+		JOIN {user_enrolments} ue ON ue.userid = u.id 
+		JOIN {enrol} e ON (e.id = ue.enrolid AND e.courseid = :courseid) 
+		LEFT JOIN {user_lastaccess} l ON (l.courseid = e.courseid AND l.userid = u.id)
+		WHERE u.deleted = 0 AND ue.timestart < :now1 AND (ue.timeend = 0 OR ue.timeend > :now2)
+		";      
+          
 $params['contextid'] = $context->id;
 $params['courseid'] = $course->id;
+$params['now1'] = 1464603000; 
+$params['now2'] = 1464603000;
 $userrecords = $DB->get_records_sql($sql, $params);
-if (get_config('block_progress', 'showinactive') !== 1) {
+
+if($showinactive == 1){
     extract_suspended_users($context, $userrecords);
 }
+
 $userids = array_keys($userrecords);
 $users = array_values($userrecords);
 $numberofusers = count($users);

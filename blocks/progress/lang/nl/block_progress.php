@@ -31,3 +31,4 @@ $string['student_details'] = 'Tijdsoverzicht van {$a}';
 $string['start'] = 'Start';
 $string['end'] = 'Einde';
 $string['time'] = 'Tijd';
+$string['showinactiveusers'] = 'Toon inactieve gebruikers';

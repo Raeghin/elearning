@@ -257,3 +257,4 @@ $string['student_details'] = 'Timetable of {$a}';
 $string['start'] = 'Start';
 $string['end'] = 'End';
 $string['time'] = 'Time';
+$string['showinactiveusers'] = 'Show inactive users';
