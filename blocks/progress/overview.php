@@ -191,13 +191,13 @@ if ($group && $group != 0) {
 
 // Get the list of users enrolled in the course.
 $picturefields = user_picture::fields('u');
-$sql2 = "SELECT DISTINCT $picturefields, COALESCE(l.timeaccess, 0) AS lastonlinetime
+$sql = "SELECT DISTINCT $picturefields, COALESCE(l.timeaccess, 0) AS lastonlinetime
           FROM {user} u
           JOIN {role_assignments} a ON (a.contextid = :contextid AND a.userid = u.id $rolewhere)
           $groupjoin
      LEFT JOIN {user_lastaccess} l ON (l.courseid = :courseid AND l.userid = u.id)";
 
-$sql = "SELECT DISTINCT $picturefields, COALESCE(l.timeaccess, 0) AS lastonlinetime
+$sql2 = "SELECT DISTINCT $picturefields, COALESCE(l.timeaccess, 0) AS lastonlinetime
 		FROM {user} u 
 		JOIN {role_assignments} a ON (a.contextid = :contextid AND a.userid = u.id $rolewhere)
 		JOIN {user_enrolments} ue ON ue.userid = u.id 
@@ -208,8 +208,8 @@ $sql = "SELECT DISTINCT $picturefields, COALESCE(l.timeaccess, 0) AS lastonlinet
           
 $params['contextid'] = $context->id;
 $params['courseid'] = $course->id;
-$params['now1'] = 1464603000; 
-$params['now2'] = 1464603000;
+//$params['now1'] = 1464603000; 
+//$params['now2'] = 1464603000;
 $userrecords = $DB->get_records_sql($sql, $params);
 
 if($showinactive == 1){
