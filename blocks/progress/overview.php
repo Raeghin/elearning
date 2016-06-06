@@ -204,44 +204,6 @@ echo get_string('role').'&nbsp;';
 echo $OUTPUT->single_select($PAGE->url, 'role', $rolestodisplay, $roleselected);
 echo $OUTPUT->container_end();
 
-<<<<<<< HEAD
-// Apply group restrictions.
-$params = array();
-$groupjoin = '';
-if ($group && $group != 0) {
-    $groupjoin = 'JOIN {groups_members} g ON (g.groupid = :groupselected AND g.userid = u.id)';
-    $params['groupselected'] = $group;
-} else if ($groupuserid != 0 && !empty($groupids)) {
-    $groupjoin = 'JOIN {groups_members} g ON (g.groupid IN ('.implode(',', $groupids).') AND g.userid = u.id)';
-}
-
-// Get the list of users enrolled in the course.
-$picturefields = user_picture::fields('u');
-$sql = "SELECT DISTINCT $picturefields, COALESCE(l.timeaccess, 0) AS lastonlinetime
-          FROM {user} u
-          JOIN {role_assignments} a ON (a.contextid = :contextid AND a.userid = u.id $rolewhere)
-          $groupjoin
-     LEFT JOIN {user_lastaccess} l ON (l.courseid = :courseid AND l.userid = u.id)";
-
-$sql2 = "SELECT DISTINCT $picturefields, COALESCE(l.timeaccess, 0) AS lastonlinetime
-		FROM {user} u 
-		JOIN {role_assignments} a ON (a.contextid = :contextid AND a.userid = u.id $rolewhere)
-		JOIN {user_enrolments} ue ON ue.userid = u.id 
-		JOIN {enrol} e ON (e.id = ue.enrolid AND e.courseid = :courseid) 
-		LEFT JOIN {user_lastaccess} l ON (l.courseid = e.courseid AND l.userid = u.id)
-		WHERE u.deleted = 0 AND ue.timestart < :now1 AND (ue.timeend = 0 OR ue.timeend > :now2)
-		";      
-          
-$params['contextid'] = $context->id;
-$params['courseid'] = $course->id;
-//$params['now1'] = 1464603000; 
-//$params['now2'] = 1464603000;
-$userrecords = $DB->get_records_sql($sql, $params);
-
-if($showinactive == 1){
-    extract_suspended_users($context, $userrecords);
-}
-=======
 echo $OUTPUT->container_start('progressoverviewmenus');
 $showexpiredusers = array(0 => get_string('yes'), 1 => get_string('no'), 2 => get_string('date'));
 echo get_string('showinactiveusers', 'block_progress').'&nbsp;';
@@ -259,7 +221,6 @@ if($showinactive == 2)
 			'group'=>$group));
 	echo $mform_simple->display();
 	echo $OUTPUT->container_start('progressoverviewmenus');
->>>>>>> SHOW_EXPIRED_USERS
 
 }
 
