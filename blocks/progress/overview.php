@@ -278,7 +278,7 @@ function block_progress_get_user_records($rolewhere, $groupjoin, $datewhere, $sh
 	$params['courseid'] = $course->id;
 	
 	$userrecords = $DB->get_records_sql($sql, $params);
-	if($showinactive == 1){
+	if($showinactive > 0){
 		extract_suspended_users($context, $userrecords);
 	}
 	return $userrecords;
