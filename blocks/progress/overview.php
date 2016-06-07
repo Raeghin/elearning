@@ -241,8 +241,8 @@ echo $OUTPUT->container_end();
 $params = array();
 $groupjoin = '';
 if ($group && $group != 0) {
-    $groupjoin = 'JOIN {groups_members} g ON (g.groupid = :groupselected AND g.userid = u.id)';
-    $params['groupselected'] = $group;
+    $groupjoin = 'JOIN {groups_members} g ON (g.groupid = ' . $group . ' AND g.userid = u.id)';
+    
 } else if ($groupuserid != 0 && !empty($groupids)) {
     $groupjoin = 'JOIN {groups_members} g ON (g.groupid IN ('.implode(',', $groupids).') AND g.userid = u.id)';
 }
@@ -268,6 +268,7 @@ function block_progress_get_user_records($rolewhere, $groupjoin, $datewhere, $sh
 	$sql = "SELECT DISTINCT $picturefields, COALESCE(l.timeaccess, 0) AS lastonlinetime, ue.timestart, ue.timeend
 	FROM {user} u
 	JOIN {role_assignments} a ON (a.contextid = :contextid AND a.userid = u.id $rolewhere)
+	$groupjoin
 	JOIN {user_enrolments} ue ON ue.userid = u.id
 	JOIN {enrol} e ON (e.id = ue.enrolid AND e.courseid = :courseid)
 	LEFT JOIN {user_lastaccess} l ON (l.courseid = e.courseid AND l.userid = u.id)
