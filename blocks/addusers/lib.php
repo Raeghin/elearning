@@ -3,7 +3,7 @@
 // Global defaults.
 define ( 'DEFAULT_COST', 3500 );
 global $DB;
-
+require_once $CFG->dirroot.'/group/lib.php';
 
 function block_addusers_get_credits($groupname) {
 	global $DB;
@@ -131,8 +131,20 @@ function block_addusers_enroluser($userid, $courseid, $enddate, $groupname, $cre
 	$enrolment = enrol_get_plugin ( "manual" );
 	
 	$instance = get_instance_for_course ( $courseid );
-	$enrol = $enrolment->enrol_user ( $instance, $userid, $instance->roleid, $startdate->getTimestamp (), $lastdate->getTimestamp () );
-	
+	$enrolment->enrol_user ( $instance, $userid, $instance->roleid, $startdate->getTimestamp (), $lastdate->getTimestamp () );
+	$groupid = groups_get_group_by_name($courseid, $groupname);
+	if($groupid == false)
+	{
+		$data = new stdClass();
+		$data->courseid = $courseid;
+		$data->name = $groupname;
+		$data->description = $groupname;
+		$groupid = groups_create_group($data);
+	}
+		
+	groups_add_member($groupid, $userid);
+		
+		
 	$payment = $costs * -1;
 	block_addusers_add_credits(block_addusers_get_groupid($groupname), $payment, get_string('createuser', 'block_addusers'), $userid, $courseid);
 }
