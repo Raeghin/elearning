@@ -61,12 +61,13 @@ $userform = new useroverviewform ( null, array (
 
 $users = array();
 
+$groupid = block_addusers_get_groupid($USER->profile['Opleidernaam']);
 if ($submitted == 1) {
 	$data = $userform->get_data ();
 	
-	$users = block_addusers_get_users($userid, $data->name);
+	$users = block_addusers_get_users($groupid, $data->name);
 } else {
-	$users = block_addusers_get_users($userid);
+	$users = block_addusers_get_users($groupid);
 }
 
 echo $userform->display ();

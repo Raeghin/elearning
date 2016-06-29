@@ -51,3 +51,6 @@ $string['comment'] = 'Opmerking';
 $string['mutation'] = 'Mutatie';
 $string['courseduration'] = 'Cursus duur';
 $string['warningcosts'] = 'Waarschuwing. Door aanmelden te kiezen wordt er EUR {$a} van uw saldo gehaald.';
+
+$string['succesfully_added'] = 'Gebruiker toegevoegd aan de cursus.';
+$string['enroll_student_more'] = 'Meld deze gebruiker bij meerdere cursussen aan';

@@ -52,3 +52,6 @@ $string['comment'] = 'Comment';
 $string['mutation'] = 'Mutation';
 $string['courseduration'] = 'Course duration';
 $string['warningcosts'] = 'Warning. By clicking Enrol, {$a} will be deducted from your credits'; 
+
+$string['succesfully_added'] = 'Succesfully added user';
+$string['enroll_student_more'] = 'Add student to other courses';

@@ -36,7 +36,7 @@ class block_addusers extends block_base {
 		setlocale(LC_MONETARY, 'nl_NL');
 		$this->content = new stdClass ();
 		$this->content->text = "<b>" . get_string('institution' , 'block_addusers') . ':</b> ' . $USER->profile['Opleidernaam'] . "<br/>";
-		$this->content->text .= "<b>" .  get_string('credits' , 'block_addusers') . ':</b> ' . money_format('%i', (block_addusers_get_credits($USER->id) / 100));
+		$this->content->text .= "<b>" .  get_string('credits' , 'block_addusers') . ':</b> ' . money_format('%i', (block_addusers_get_credits($USER->profile['Opleidernaam']) / 100));
 		
 		$this->content->text .= "<p>";
 		$menulist = array();

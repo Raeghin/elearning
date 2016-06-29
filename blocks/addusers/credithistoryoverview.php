@@ -10,6 +10,7 @@ define ( 'SHOW_ALL_PAGE_SIZE', 5000 );
 
 // Gather form data.
 $userid = $USER->id;
+$groupid = block_addusers_get_groupid($USER->profile['Opleidernaam']);
 $page = optional_param ( 'page', 0, PARAM_INT ); // Which page to show.
 $perpage = optional_param ( 'perpage', DEFAULT_PAGE_SIZE, PARAM_INT ); // How many per page.
 
@@ -30,7 +31,8 @@ echo $OUTPUT->header ();
 echo $OUTPUT->heading ( $title, 2 );
 echo $OUTPUT->container_start ( 'block_history' );
 
-$history = block_addusers_get_credit_history ( $userid );
+$history = block_addusers_get_credit_history ( $groupid );
+
 block_addusers_show_table ( $history );
 
 echo $OUTPUT->container_end ();

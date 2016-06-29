@@ -89,6 +89,8 @@ block_addusers_list_courses_table ( $courses );
 
 echo $OUTPUT->container_end ();
 
+echo $OUTPUT->footer();
+
 function block_addusers_list_courses_table($courses) {
 	global $PAGE, $CFG, $OUTPUT;
 	

@@ -5,15 +5,20 @@ define ( 'DEFAULT_COST', 3500 );
 global $DB;
 
 
-function block_addusers_get_credits($userid) {
+function block_addusers_get_credits($groupname) {
 	global $DB;
 	
-	$field = $DB->get_record ( 'block_addusers_usercredits', array (
-			'customer_id' => $userid 
-	) );
+	$groupid = block_addusers_get_groupid($groupname);
+	
+	
+	$sql = "SELECT amount " .
+			"FROM {block_addusers_usercredits} " .
+			"WHERE groupid = ?";
+	
+	$field = $DB->get_record_sql($sql, array($groupid));
 	
 	if ($field == false) {
-		block_addusers_add_teacher ( $userid );
+		block_addusers_add_group ( $groupname );
 		return 0;
 	} else {
 		return $field->amount;
@@ -25,40 +30,58 @@ function block_addusers_get_credits($userid) {
  *
  * @return array section information
  */
-function block_addusers_add_credits($userid, $credits, $comment, $studentid = '', $courseid = '') {
+function block_addusers_add_credits($groupid, $credits, $comment, $studentid = '', $courseid = '') {
 	global $DB;
 	
 	$usercredits = $DB->get_record ( 'block_addusers_usercredits', array (
-			'customer_id' => $userid 
+			'groupid' => $groupid 
 	) );
 	
 	$record = new stdClass ();
 	$record->id = $usercredits->id;
-	$record->customer_id = $userid;
+	$record->groupid = $groupid;
 	$record->amount = $credits + $usercredits->amount;
 	
 	$DB->update_record ( 'block_addusers_usercredits', $record );
-	block_addusers_add_history($userid, $credits, $courseid, $studentid, $comment);
+	block_addusers_add_history($groupid, $credits, $courseid, $studentid, $comment);
 }
 
-
-function block_addusers_add_teacher($userid) {
+/**
+ * Add group to the database
+ * @param unknown $grouponame
+ */
+function block_addusers_add_group($groupname) {
 	global $DB;
 	
 	$record = new stdClass ();
-	$record->customer_id = $userid;
+	$record->groupname = $groupname;
+	
+	$groupid = $DB->insert_record ( 'block_addusers_groups', $record );
+	
+	$record = new stdClass ();
+	$record->groupid = $groupid;
 	$record->amount = '0';
 	
 	$DB->insert_record ( 'block_addusers_usercredits', $record );
 	
-	block_addusers_add_history ( $userid, 0, '', '', '');
+	block_addusers_add_history ( $groupid, 0, '', '', '');
+	
+	return $groupid;
 }
 
-function block_addusers_add_history($userid, $amount, $courseid = '', $studentid = '', $comment = '') {
+/**
+ * Add purchase history
+ * @param string $groupname
+ * @param int $amount
+ * @param string $courseid
+ * @param string $studentid
+ * @param string $comment
+ */
+function block_addusers_add_history($groupid, $amount, $courseid = '', $studentid = '', $comment = '') {
 	global $DB;
 	
 	$record = new stdClass ();
-	$record->customer_id = $userid;
+	$record->groupid = $groupid;
 	$record->amount = $amount;
 	$record->dateofpurchase = time ();
 	$record->course_courseid = $courseid;
@@ -67,19 +90,20 @@ function block_addusers_add_history($userid, $amount, $courseid = '', $studentid
 	
 	$DB->insert_record ( 'block_addusers_history', $record );
 }
-function block_addusers_get_credit_history($userid) {
+
+function block_addusers_get_credit_history($groupid) {
 	global $DB;
 	
 	$sql = "SELECT bah.id, bah.amount, bah.dateofpurchase, c.fullname AS coursename, u.firstname, u.lastname, bah.comment " .
 			"FROM {block_addusers_history} bah " .
 			"LEFT JOIN {course} c ON bah.course_courseid = c.id " .
 			"LEFT JOIN {user} u ON bah.user_userid = u.id " .
-			"WHERE bah.customer_id = ? ORDER BY bah.dateofpurchase";
+			"WHERE bah.groupid = ? ORDER BY bah.dateofpurchase";
 	
-	return $DB->get_records_sql($sql, array($userid));
+	return $DB->get_records_sql($sql, array($groupid));
 }
 
-function block_addusers_enroluser($userid, $courseid, $enddate, $creatorid) {
+function block_addusers_enroluser($userid, $courseid, $enddate, $groupname, $creatorid) {
 	global $DB;
 	
 	if(block_addusers_checkuserenrolled($userid, $courseid))
@@ -90,7 +114,7 @@ function block_addusers_enroluser($userid, $courseid, $enddate, $creatorid) {
 	$duration = $durationandprice->days - 1;
 	$costs = $durationandprice->costs * 100;
 	
-	$credits = block_addusers_get_credits($creatorid);
+	$credits = block_addusers_get_credits($groupname);
 	
 	if($credits < $costs){	
 	 	throw new Exception ( get_string ( 'not_enough_credits', 'block_addusers' ) );
@@ -110,7 +134,7 @@ function block_addusers_enroluser($userid, $courseid, $enddate, $creatorid) {
 	$enrol = $enrolment->enrol_user ( $instance, $userid, $instance->roleid, $startdate->getTimestamp (), $lastdate->getTimestamp () );
 	
 	$payment = $costs * -1;
-	block_addusers_add_credits($creatorid, $payment, get_string('createuser', 'block_addusers'), $userid, $courseid);
+	block_addusers_add_credits(block_addusers_get_groupid($groupname), $payment, get_string('createuser', 'block_addusers'), $userid, $courseid);
 }
 
 function block_addusers_checkuseremail($email) {
@@ -133,8 +157,10 @@ function block_addusers_checkusername($username) {
 		return false;
 }
 
-function block_addusers_createuser($username, $firstname, $lastname, $email, $creatorid) {
+function block_addusers_createuser($username, $firstname, $lastname, $email, $creatorid, $groupid) {
 	global $DB;
+	
+	
 	if (block_addusers_checkuseremail ( $email ))
 		throw new Exception ( get_string ( 'email_taken', 'block_addusers' ) );
 	if ($username != $email)
@@ -159,6 +185,7 @@ function block_addusers_createuser($username, $firstname, $lastname, $email, $cr
 	$creator = new StdClass ();
 	$creator->user_userid = $user->id;
 	$creator->creator_userid = $creatorid;
+	$creator->groupid = $groupid;
 	
 	$DB->insert_record ( 'block_addusers_createdusers', $creator );
 	
@@ -206,11 +233,15 @@ function block_addusers_get_user_details($userids)
  * @param int $creatorid
  * @param string $namesearch
  */
-function block_addusers_get_users($creatorid, $namesearch = '') {
+function block_addusers_get_users($groupid, $namesearch = '') {
 	global $DB;
 	
-	$sql = "SELECT DISTINCT u.id, u.firstname, u.lastname, u.email FROM {block_addusers_createdusers} cu JOIN {user} u ON cu.user_userid = u.id WHERE cu.creator_userid = :creatorid AND (u.firstname LIKE :search OR u.lastname LIKE :search2)";
-	$params['creatorid'] = $creatorid;
+	$sql = "SELECT DISTINCT u.id, u.firstname, u.lastname, u.email 
+			FROM {block_addusers_createdusers} cu 
+			JOIN {user} u ON cu.user_userid = u.id 
+			WHERE cu.groupid = :groupid 
+			AND (u.firstname LIKE :search OR u.lastname LIKE :search2)";
+	$params['groupid'] = $groupid;
 	$params['search'] = '%' . $namesearch . '%';
 	$params['search2'] = '%' . $namesearch . '%';
 	
@@ -327,16 +358,18 @@ function block_addusers_get_course_and_price($courseid)
 function block_addusers_get_teachers()
 {
 	global $DB;
-	$sql = "SELECT u.id, u.firstname, u.lastname, uc.amount, u.username, uif.shortname, uid.data
-	FROM {user} AS u
-	JOIN {user_info_data} AS uid ON uid.userid = u.id
-	JOIN {user_info_field} AS uif ON uid.fieldid = uif.id
-	LEFT JOIN {block_addusers_usercredits} uc ON uc.customer_id = u.id
+	
+	$sql = "SELECT DISTINCT g.id as groupid, uid.data as groupname, uc.amount
+	FROM {block_addusers_usercredits} uc
+	JOIN {block_addusers_groups} g ON g.id = uc.groupid
+	RIGHT JOIN {user_info_data} uid ON uid.data = g.groupname
+	RIGHT JOIN {user_info_field} uif ON uif.id = uid.fieldid
+	JOIN {user} u on uid.userid = u.id
 	WHERE uif.shortname = 'Opleidernaam'";
-	
-	return ($DB->get_records_sql($sql));
-	
+		
+	return ($DB->get_records_sql($sql));	
 }
+
 
 /**
  * Get the instance of course
@@ -359,3 +392,17 @@ function block_addusers_checkuserenrolled($userid, $courseid)
 	return is_enrolled($context = context_course::instance($courseid), $userid, '', false);
 }
 
+function block_addusers_get_groupid($groupname){
+	global $DB;
+	$sql = "SELECT id " .
+			"FROM {block_addusers_groups} " .
+			"WHERE groupname = ?";
+	
+	$field = $DB->get_record_sql($sql, array($groupname));
+	
+	if ($field == false) {
+		return block_addusers_add_group ( $groupname );
+	} else {
+		return $field->id;
+	}
+}

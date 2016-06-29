@@ -21,6 +21,9 @@ class adduserform extends moodleform {
 		$mform->setType ( 'userid', PARAM_RAW );
 		$mform->addElement ( 'hidden', 'userid', $this->_customdata ['userid'] );
 		
+		$mform->setType ( 'groupid', PARAM_RAW );
+		$mform->addElement ( 'hidden', 'groupid', $this->_customdata ['groupid'] );
+		
 		$mform->setType ( 'submitted', PARAM_RAW );
 		$mform->addElement ( 'hidden', 'submitted', 1 );
 	}
@@ -28,6 +31,7 @@ class adduserform extends moodleform {
 
 // Gather form data.
 $userid = $USER->id;
+$groupid = block_addusers_get_groupid($USER->profile['Opleidernaam']);
 $submitted = optional_param ( 'submitted', 0, PARAM_INT );
 
 $PAGE->set_url ( '/blocks/addusers/adduser.php', array () );
@@ -46,14 +50,14 @@ echo $OUTPUT->heading ( $title, 2 );
 echo $OUTPUT->container_start ( 'block_adduser' );
 
 $userform = new adduserform ( null, array (
-		'userid' => $userid 
+		'userid' => $userid, 'groupid' => $groupid
 ) );
 
 if ($submitted == 1) {
 	$data = $userform->get_data ();
 	
 	try {
-		$returnobject = block_addusers_createuser ( $data->email, $data->firstname, $data->lastname, $data->email, $data->userid );
+		$returnobject = block_addusers_createuser ( $data->email, $data->firstname, $data->lastname, $data->email, $data->userid, $data->groupid);
 		echo $OUTPUT->container_start ( 'block_adduser_success' );
 		$user = new stdClass();
 		$user->username = $data->email;

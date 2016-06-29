@@ -14,9 +14,9 @@ class teacheroverviewform extends moodleform
 
 		$mform = $this->_form;
 		
-		$mform->addElement('text', 'teachername', get_string('fullname'));
-		$mform->setDefault('teachername', $this->_customdata['teachername']);
-		$mform->setType('teachername', PARAM_TEXT);
+		$mform->addElement('text', 'groupname', get_string('institution', 'block_addusers'));
+		$mform->setDefault('groupname', $this->_customdata['groupname']);
+		$mform->setType('groupname', PARAM_RAW);
 		
 		$mform->addElement('text', 'credits', get_string('credits_to_add', 'block_addusers'));
 		$mform->setType('credits', PARAM_FLOAT);
@@ -26,8 +26,8 @@ class teacheroverviewform extends moodleform
 		
 		$mform->addElement('submit', 'submitbutton', get_string('add'));
 		
-		$mform->setType('teacherid', PARAM_NUMBER);
-		$mform->addElement('hidden', 'teacherid', $this->_customdata['teacherid']);
+		$mform->setType ( 'groupid', PARAM_RAW );
+		$mform->addElement ( 'hidden', 'groupid', $this->_customdata ['groupid'] );
 		
 		$mform->setType('submitted', PARAM_RAW);
 		$mform->addElement('hidden', 'submitted', 1);
@@ -37,9 +37,9 @@ class teacheroverviewform extends moodleform
 // Gather form data.
 $userid = $USER->id;
 $submitted = optional_param ( 'submitted', 0, PARAM_INT );
-$teacherid = optional_param ( 'teacherid', 0, PARAM_INT );
+$groupname = optional_param ( 'groupname', '', PARAM_RAW );
 $credits = optional_param ( 'credits', 0, PARAM_INT );
-$teachername = optional_param('teachername', '', PARAM_TEXT );
+$groupid = optional_param ( 'groupid', 0, PARAM_INT );
 
 $PAGE->set_url ( '/blocks/addusers/usercredits.php', array () );
 $PAGE->requires->css ( '/blocks/addusers/styles.css' );
@@ -55,25 +55,23 @@ echo $OUTPUT->header ();
 echo $OUTPUT->heading ( $title, 2 );
 echo $OUTPUT->container_start ( 'block_listusers' );
 
+
 $teacheroverviewform = new teacheroverviewform(null, array (
-		'teacherid' => '', 'teachername' => '','credits' => ''
+		'groupname' => '', 'credits' => '', 'groupid' => $groupid
 		) );
 
-if($teacherid > 0)
+if($groupname != '')
 {
 	$teacheroverviewform = new teacheroverviewform ( null, array (
-		'teacherid' => $teacherid, 'teachername' => $teachername,'credits' => $credits
+		'groupname' => $groupname, 'credits' => $credits, 'groupid' => $groupid
 	) );
-	
-	echo $teacheroverviewform->display ();
+	if($submitted <> 1)
+		echo $teacheroverviewform->display ();
 }
 
 if ($submitted == 1) {
 	$data = $teacheroverviewform->get_data ();
-	block_addusers_add_credits($data->teacherid, $data->credits * 100, $data->comment);
-	$teacheroverviewform = new teacheroverviewform ( null, array (
-			'teacherid' => '$teacherid', 'teachername' => '$teachername','credits' => '$credits'
-	) );
+	block_addusers_add_credits($data->groupid, $data->credits * 100, $data->comment);
 }
 
 $teachers = block_addusers_get_teachers();
@@ -90,14 +88,12 @@ function block_addusers_list_teachers_table($teachers) {
 	$table = new flexible_table ( 'block-buyusers-users-overview' );
 	
 	$tablecolumns = array (
-			'name',
 			'institution',
 			'credits',
 			'details'
 	);
 	$table->define_columns ( $tablecolumns );
 	$tableheaders = array (
-			get_string ( 'fullname' ),
 			get_string ( 'institution', 'block_addusers' ),
 			get_string ( 'credits', 'block_addusers' ),
 			get_string ( 'add' )
@@ -119,11 +115,11 @@ function block_addusers_list_teachers_table($teachers) {
 	foreach ($teachers as $teacher)
 	{
 		if(!isset($teacher->amount)){
-			block_addusers_add_teacher($teacher->id);
+			echo print_r($teacher);
+			block_addusers_add_group($teacher->groupname);
 			$teacher->amount = 0;
 		}
-			
-		$params = array('teacherid' => $teacher->id, 'credits' => $teacher->amount, 'teachername' => $teacher->firstname . ' ' . $teacher->lastname);
+		$params = array('credits' => $teacher->amount, 'groupname' => $teacher->groupname, 'groupid' => $teacher->groupid);
 		
 		$link = new moodle_url('/blocks/addusers/usercredits.php', $params);
 		$icon = $OUTPUT->pix_icon('add', 'details', 'block_addusers', array('class' => 'nowicon'));
@@ -131,7 +127,7 @@ function block_addusers_list_teachers_table($teachers) {
 		$details = HTML_WRITER::link($link, $icon);
 		
 		$table->add_data(array(
-				$teacher->firstname . ' ' . $teacher->lastname, $teacher->data, '&#8364;' . money_format('%i', $teacher->amount / 100), $details)
+				$teacher->groupname, '&#8364;' . money_format('%i', $teacher->amount / 100), $details)
 		);
 	}
 

@@ -11,10 +11,8 @@ class enrolluserform extends moodleform {
 		global $CFG;
 		
 		$mform = $this->_form;
-		echo '<b>' . get_string('course') . "</b>: " . get_course($this->_customdata['courseid'])->fullname . "<br/>";
-		$durationandcosts = block_addusers_get_course_duration_and_costs( $this->_customdata['courseid']);
-		echo '<b>' . get_string('cost') . "</b>: " . money_format('%i', $durationandcosts->costs) . "<br/>";
-		echo '<b>' . get_string('courseduration', 'block_addusers') . "</b>: " . $durationandcosts->days . ' ' . get_string('days') . " <br/>";
+		
+		
 		
 		$mform->addElement ( 'date_selector', 'practicaldate', get_string ( 'practicalday', 'block_addusers' ), array (
 				'startyear' => 2010,
@@ -34,7 +32,7 @@ class enrolluserform extends moodleform {
 		$mform->setType ( 'submitted', PARAM_RAW );
 		$mform->addElement ( 'hidden', 'submitted', 1 );
 		
-		echo "<div class='block_adduser_warning'>" . get_string('warningcosts', 'block_addusers', $durationandcosts->costs) . "</div>";
+		
 	}
 }
 
@@ -82,11 +80,28 @@ if($showform || $submitted)
 			'courseid' => $courseid
 	) );
 if ($showform)
+{
+	echo '<b>' . get_string('course') . "</b>: " . get_course($courseid)->fullname . "<br/>";
+	$durationandcosts = block_addusers_get_course_duration_and_costs($courseid);
+	echo '<b>' . get_string('cost') . "</b>: " . money_format('%i', $durationandcosts->costs) . "<br/>";
+	echo '<b>' . get_string('courseduration', 'block_addusers') . "</b>: " . $durationandcosts->days . ' ' . get_string('days') . " <br/>";
+	echo "<div class='block_adduser_warning'>" . get_string('warningcosts', 'block_addusers', $durationandcosts->costs) . "</div>";
+	
 	echo $form->display () . "<br/><hr/>";
+}
 else if ($submitted > 0) {
 	$data = $form->get_data ();
 	try{
-		block_addusers_enroluser($data->userid, $data->courseid, $data->practicaldate, $USER->id);
+		block_addusers_enroluser($data->userid, $data->courseid, $data->practicaldate, $USER->profile['Opleidernaam'], $USER->id);
+		
+		echo $OUTPUT->container_start ( 'block_adduser_nextstep' );
+	
+		$params = array('userid'=> $userid);
+		$link = new moodle_url('/blocks/addusers/view_enrollments.php', $params);
+		
+		echo get_string('succesfully_added', 'block_addusers') . "<br/>";
+		echo HTML_WRITER::link($link, get_string('enroll_student_more', 'block_addusers'));
+		echo $OUTPUT->container_end ();
 	} catch ( Exception $e ) {
 		
 		echo $OUTPUT->container_start ( 'block_adduser_error' );
