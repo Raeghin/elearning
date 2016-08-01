@@ -54,3 +54,4 @@ $string['warningcosts'] = 'Waarschuwing. Door aanmelden te kiezen wordt er EUR {
 
 $string['succesfully_added'] = 'Gebruiker toegevoegd aan de cursus.';
 $string['enroll_student_more'] = 'Meld deze gebruiker bij meerdere cursussen aan';
+$string['addusers:addcredits'] = 'Beheer van kredieten';

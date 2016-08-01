@@ -55,3 +55,4 @@ $string['warningcosts'] = 'Warning. By clicking Enrol, {$a} will be deducted fro
 
 $string['succesfully_added'] = 'Succesfully added user';
 $string['enroll_student_more'] = 'Add student to other courses';
+$string['addusers:addcredits'] = 'Administer credits';

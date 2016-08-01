@@ -16,8 +16,8 @@
 
 
 
-$plugin->version   = 201606291104;
+$plugin->version   = 201606291106;
 $plugin->requires  = 2010121000;
 $plugin->maturity  = MATURITY_STABLE;
-$plugin->release   = 'v0.09';
+$plugin->release   = 'v1.01';
 $plugin->component = 'block_addusers';

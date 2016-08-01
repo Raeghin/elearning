@@ -4,6 +4,10 @@ require_once (dirname ( __FILE__ ) . '/../../config.php');
 require_once ($CFG->dirroot . '/blocks/addusers/lib.php');
 require_once ($CFG->libdir . '/tablelib.php');
 require_once ($CFG->libdir . '/formslib.php');
+
+$PAGE->set_url ( '/blocks/addusers/adduser.php', array () );
+require_login ( '', false );
+
 class adduserform extends moodleform {
 	function definition() {
 		global $CFG;
@@ -34,7 +38,8 @@ $userid = $USER->id;
 $groupid = block_addusers_get_groupid($USER->profile['Opleidernaam']);
 $submitted = optional_param ( 'submitted', 0, PARAM_INT );
 
-$PAGE->set_url ( '/blocks/addusers/adduser.php', array () );
+
+
 $PAGE->requires->css ( '/blocks/addusers/styles.css' );
 $PAGE->set_context ( context_system::instance () );
 $title = get_string ( 'add_user', 'block_addusers' );
@@ -60,7 +65,7 @@ if ($submitted == 1) {
 		$returnobject = block_addusers_createuser ( $data->email, $data->firstname, $data->lastname, $data->email, $data->userid, $data->groupid);
 		echo $OUTPUT->container_start ( 'block_adduser_success' );
 		$user = new stdClass();
-		$user->username = $data->email;
+		$user->username = strtolower($data->email);
 		$user->password = $returnobject->message;
 		echo get_string ( 'password', 'block_addusers', $user);
 		

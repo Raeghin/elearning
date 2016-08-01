@@ -7,6 +7,10 @@ require_once($CFG->dirroot.'/blocks/addusers/lib.php');
 require_once($CFG->libdir.'/tablelib.php');
 require_once($CFG->libdir.'/formslib.php');
 
+$PAGE->set_url ( '/blocks/addusers/usercredits.php', array () );
+require_login ( '', false );
+require_capability ( 'block/addusers:addcredits', context_system::instance ());
+
 class teacheroverviewform extends moodleform
 {
 	function definition() {
@@ -41,7 +45,7 @@ $groupname = optional_param ( 'groupname', '', PARAM_RAW );
 $credits = optional_param ( 'credits', 0, PARAM_INT );
 $groupid = optional_param ( 'groupid', 0, PARAM_INT );
 
-$PAGE->set_url ( '/blocks/addusers/usercredits.php', array () );
+
 $PAGE->requires->css ( '/blocks/addusers/styles.css' );
 $PAGE->set_context ( context_system::instance () );
 $title = get_string ( 'user_credits', 'block_addusers' );

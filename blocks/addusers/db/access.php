@@ -8,7 +8,6 @@ $capabilities = array (
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'archetypes' => array(
-            'user' => CAP_ALLOW
         ),
  
         'clonepermissionsfrom' => 'moodle/my:manageblocks'
@@ -26,4 +25,15 @@ $capabilities = array (
  
         'clonepermissionsfrom' => 'moodle/site:manageblocks'
 	),
+		
+	'block/addusers:addcredits' => array(
+		'riskbitmask' => RISK_DATALOSS | RISK_CONFIG,
+		'captype' => 'write',
+		'contextlevel' => CONTEXT_SYSTEM,
+		'archetypes' => array(
+
+		)
+	),
+		
+		
 );

@@ -114,7 +114,7 @@ function block_addusers_list_users_table($users) {
 	$table->column_style ( 'lastname', 'width', '30%' );
 	$table->column_style ( 'email', 'width', '30%' );
 	$table->column_style ( 'enrollments', 'width', '10%' );
-	
+	$table->column_nosort ( 'enrollments');
 	$table->define_baseurl($PAGE->url);
 	$table->setup();
 
@@ -122,11 +122,23 @@ function block_addusers_list_users_table($users) {
 	$start = $page * $perpage;
 	$end = ($start + $perpage > $numberofentries) ? $numberofentries : ($start + $perpage);
 
+	global $sort;
+	$sort = $table->get_sql_sort();
+	$nosort = strncmp($sort, 'enrollme', 8) == 0;
+	if (!$sort || ($paged && $nosort)) {
+		$sort = 'lastname DESC';
+	}
+	usort($users, 'block_addusers_compare_rows');
 	
+	// Get range of students for page.
+	$startuser = $page * $perpage;
+	$numberofusers = count($users);
+	$enduser = ($startuser + $perpage > $numberofusers) ? $numberofusers : ($startuser + $perpage);
 	
 	$tablerows = array();
-	foreach ($users as $user)
-	{
+	
+	for ($i = $startuser; $i < $enduser; $i++) {
+		$user = $users[$i];
 		$enrollmentsparameters = array('userid' => $user->id);
 		$enrollmentslink = new moodle_url('/blocks/addusers/view_enrollments.php', $enrollmentsparameters);
 		$enrollmentdetailsicon = $OUTPUT->pix_icon('enroll', 'details', 'block_addusers', array('class' => 'nowicon'));
@@ -149,4 +161,65 @@ function block_addusers_list_users_table($users) {
 		$perpageurl->param('perpage', DEFAULT_PAGE_SIZE);
 		echo $OUTPUT->container(html_writer::link($perpageurl, get_string('showperpage', '', DEFAULT_PAGE_SIZE)), array(), 'showall');
 	}
+}
+
+/**
+* Compares two table row elements for ordering.
+*
+* @param  mixed $a element containing name, online time and progress info
+* @param  mixed $b element containing name, online time and progress info
+* @return order of pair expressed as -1, 0, or 1
+*/
+function block_addusers_compare_rows($a, $b) {
+	global $sort;
+	// Process each of the one or two orders.
+	$orders = explode(',', $sort);
+
+	foreach ($orders as $order) {
+
+		// Extract the order information.
+		$orderelements = explode(' ', trim($order));
+		$aspect = $orderelements[0];
+		$ascdesc = $orderelements[1];
+
+		// Compensate for presented vs actual.
+		switch ($aspect) {
+			case 'firstname':
+				$aspect = 'firstname';
+				break;
+			case 'lastname':
+				$aspect = 'lastname';
+				break;
+			case 'email':
+				$aspect = 'email';
+				break;
+			case 'enrollments':
+				$aspect = 'lastname';
+				break;
+		}
+
+		// Check of order can be established.
+		if (is_array($a)) {
+			$first = $a[$aspect];
+			$second = $b[$aspect];
+		} else {
+			$first = $a->$aspect;
+			$second = $b->$aspect;
+		}
+
+		if (preg_match('/name/', $aspect)) {
+			$first = strtolower($first);
+			$second = strtolower($second);
+		}
+
+		if ($first < $second) {
+			return $ascdesc == 'ASC' ? 1 : -1;
+		}
+		if ($first > $second) {
+			return $ascdesc == 'ASC' ? -1 : 1;
+		}
+	}
+
+	// If previous ordering fails, consider values equal.
+	return 0;
 }

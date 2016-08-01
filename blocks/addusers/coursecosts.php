@@ -7,6 +7,12 @@ require_once($CFG->dirroot.'/blocks/addusers/lib.php');
 require_once($CFG->libdir.'/tablelib.php');
 require_once($CFG->libdir.'/formslib.php');
 
+$PAGE->set_url ( '/blocks/addusers/coursecosts.php', array () );
+$PAGE->set_context ( context_system::instance () );
+
+require_login ( '', false );
+require_capability ( 'block/addusers:addcredits', context_system::instance ());
+
 class courseoverviewform extends moodleform
 {
 	function definition() {
@@ -44,15 +50,14 @@ $userid = $USER->id;
 $submitted = optional_param ( 'submitted', 0, PARAM_INT );
 $courseid = optional_param ( 'courseid', -1, PARAM_INT );
 
-$PAGE->set_url ( '/blocks/addusers/coursecosts.php', array () );
+
 $PAGE->requires->css ( '/blocks/addusers/styles.css' );
-$PAGE->set_context ( context_system::instance () );
+
 $title = get_string ( 'course_costs', 'block_addusers' );
 $PAGE->set_title ( $title );
 $PAGE->set_heading ( $title );
 $PAGE->navbar->add ( $title );
 $PAGE->set_pagelayout ( 'standard' );
-
 
 
 // Start page output.
