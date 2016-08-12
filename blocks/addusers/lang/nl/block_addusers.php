@@ -28,7 +28,7 @@ $string['add_user'] = 'Gebruikers toevoegen';
 $string['email_taken'] = 'Email adres niet correct of al in gebruik.';
 $string['username_taken'] = 'Gebruikersnaam al in gebruik.';
 $string['general_error'] = 'Er is iets mis gegaan.';
-$string['password'] = 'Account aangemaakt. De gebruiker kan zich aanmelden met de volgende gegevens:<br/>
+$string['password_created'] = 'Account aangemaakt. De gebruiker kan zich aanmelden met de volgende gegevens:<br/>
 		Gebruikersnaam: <b>{$a->username}</b><br/>
 		Wachtwoord: <b>{$a->password}</b><br/><br/>
 		Let op! Dit wachtwoord wordt maar eenmaal verstrekt.';
@@ -55,3 +55,5 @@ $string['warningcosts'] = 'Waarschuwing. Door aanmelden te kiezen wordt er EUR {
 $string['succesfully_added'] = 'Gebruiker toegevoegd aan de cursus.';
 $string['enroll_student_more'] = 'Meld deze gebruiker bij meerdere cursussen aan';
 $string['addusers:addcredits'] = 'Beheer van kredieten';
+$string['password'] = 'Wachtwoord';
+$string['password_help'] = 'Een nieuw wachtwoord dient enkel ingevuld te worden om aan te passen. Laat dit veld leeg om het huidige wachtwoord te behouden';

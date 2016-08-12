@@ -64,7 +64,8 @@ class edituserform extends moodleform {
 		
 		$mform->addElement ( 'text', 'password', get_string ( 'password' ) );
 		$mform->setType ( 'password', PARAM_TEXT );
-				
+		$mform->addHelpButton('password', 'password', 'block_addusers');
+		
 		$mform->addElement ( 'submit', 'submitbutton', get_string ( 'edit' ) );
 
 		$mform->setType ( 'page', PARAM_RAW );

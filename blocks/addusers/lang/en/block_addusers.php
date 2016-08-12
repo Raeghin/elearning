@@ -29,7 +29,7 @@ $string['add_user'] = 'Add User';
 $string['email_taken'] = 'Email already in use. Please provide another one.';
 $string['username_taken'] = 'Username already in use.';
 $string['general_error'] = 'Something went wrong.';
-$string['password'] = 'Account created. User can now login with the following credentials:<br/>
+$string['password_created'] = 'Account created. User can now login with the following credentials:<br/>
 		Username: <b>{$a->username}</b><br/>
 		Password: <b>{$a->password}</b>.<br/><br/>
 		Caution! This password is only supplied once!';
@@ -56,3 +56,5 @@ $string['warningcosts'] = 'Warning. By clicking Enrol, {$a} will be deducted fro
 $string['succesfully_added'] = 'Succesfully added user';
 $string['enroll_student_more'] = 'Add student to other courses';
 $string['addusers:addcredits'] = 'Administer credits';
+$string['password'] = 'Password';
+$string['password_help'] = 'Please only fill in when new password is wanted.';

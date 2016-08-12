@@ -67,7 +67,7 @@ if ($submitted == 1) {
 		$user = new stdClass();
 		$user->username = strtolower($data->email);
 		$user->password = $returnobject->message;
-		echo get_string ( 'password', 'block_addusers', $user);
+		echo get_string ( 'password_created', 'block_addusers', $user);
 		
 		echo $OUTPUT->container_end ();
 		echo $OUTPUT->container_start ( 'block_adduser_nextstep' );
