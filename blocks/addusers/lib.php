@@ -270,7 +270,7 @@ function block_addusers_update_user_details($user)
 function block_addusers_get_users($groupid, $namesearch = '') {
 	global $DB;
 	
-	$sql = "SELECT DISTINCT u.id, u.firstname, u.lastname, u.email 
+	$sql = "SELECT DISTINCT u.id, u.username, u.firstname, u.lastname, u.email 
 			FROM {block_addusers_createdusers} cu 
 			JOIN {user} u ON cu.user_userid = u.id 
 			WHERE cu.groupid = :groupid 

@@ -176,6 +176,7 @@ function block_addusers_list_users_table($users) {
 	$table = new flexible_table ( 'block-buyusers-users-overview' );
 	$table->pagesize ( $perpage, $numberofentries );
 	$tablecolumns = array (
+			'username',
 			'firstname',
 			'lastname',
 			'email',
@@ -184,6 +185,7 @@ function block_addusers_list_users_table($users) {
 	);
 	$table->define_columns ( $tablecolumns );
 	$tableheaders = array (
+			get_string ( 'username' ),
 			get_string ( 'firstname' ),
 			get_string ( 'lastname' ),
 			get_string ( 'email' ),
@@ -197,9 +199,10 @@ function block_addusers_list_users_table($users) {
 	$table->column_style_all ( 'padding', '5px' );
 	$table->column_style_all ( 'text-align', 'left' );
 	$table->column_style_all ( 'vertical-align', 'middle' );
-	$table->column_style ( 'firstname', 'width', '30%' );
-	$table->column_style ( 'lastname', 'width', '30%' );
-	$table->column_style ( 'email', 'width', '30%' );
+	$table->column_style ( 'username', 'width', '25%' );
+	$table->column_style ( 'firstname', 'width', '20%' );
+	$table->column_style ( 'lastname', 'width', '20%' );
+	$table->column_style ( 'email', 'width', '25%' );
 	$table->column_style ( 'edit', 'width', '5%' );
 	$table->column_style ( 'enrollments', 'width', '5%' );
 	
@@ -255,6 +258,7 @@ function block_addusers_list_users_table($users) {
 		$details = HTML_WRITER::link ( $enrollmentslink, $enrollmentdetailsicon );
 		
 		$table->add_data ( array (
+				$user->username,
 				$user->firstname,
 				$user->lastname,
 				$user->email,
@@ -300,6 +304,9 @@ function block_addusers_listusers_compare_rows($a, $b) {
 		
 		// Compensate for presented vs actual.
 		switch ($aspect) {
+			case 'username' :
+				$aspect = 'username';
+				break;
 			case 'firstname' :
 				$aspect = 'firstname';
 				break;
