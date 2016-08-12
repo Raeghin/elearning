@@ -321,7 +321,9 @@ function block_addusers_get_eligable_courses($teacherid)
 				"JOIN {block_addusers_requirements} br ON br.course_courseid = t_course.id " .
 				"WHERE t_context.contextlevel = '50' " .
 				"AND (t_role_assignments.roleid = '3' OR t_role_assignments.roleid = '4') " .
+				"AND br.costs > 0 " .
 				"AND t_user.id = ?";
+			
 	
 	return $DB->get_records_sql($sql, array($teacherid));
 }
