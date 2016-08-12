@@ -4,7 +4,7 @@ require_once (dirname ( __FILE__ ) . '/../../config.php');
 require_once ($CFG->dirroot . '/blocks/addusers/lib.php');
 require_once ($CFG->libdir . '/tablelib.php');
 
-define ( 'DEFAULT_PAGE_SIZE', 20 );
+define ( 'DEFAULT_PAGE_SIZE', 15 );
 define ( 'SHOW_ALL_PAGE_SIZE', 5000 );
 
 
@@ -86,8 +86,19 @@ function block_addusers_show_table($history) {
 	$start = $page * $perpage;
 	$end = ($start + $perpage > $numberofentries) ? $numberofentries : ($start + $perpage);
 	
+	
+				
+	global $sort;
+	$sort = $table->get_sql_sort ();
+	
+	if (! $sort) {
+		$sort = 'date DESC';
+	}
+	usort ( $history, 'block_addusers_credithistoryoverview_compare_rows' );
+	
 	$rows = array_values($history);
-	$tablerows = array();
+	$tablerows = array ();
+		
 	for ($i = $start; $i < $end; $i++) {
 		setlocale(LC_MONETARY, 'nl_NL');
 		$tablerows[] = array(
@@ -117,4 +128,72 @@ function block_addusers_show_table($history) {
 		$perpageurl->param('perpage', DEFAULT_PAGE_SIZE);
 		echo $OUTPUT->container(html_writer::link($perpageurl, get_string('showperpage', '', DEFAULT_PAGE_SIZE)), array(), 'showall');
 	}
+}
+
+/**
+ * Compares two table row elements for ordering.
+ *
+ * @param mixed $a
+ *        	element containing name, online time and progress info
+ * @param mixed $b
+ *        	element containing name, online time and progress info
+ * @return order of pair expressed as -1, 0, or 1
+ *
+ */
+function block_addusers_credithistoryoverview_compare_rows($a, $b) {
+	global $sort;
+	// Process each of the one or two orders.
+	$orders = explode ( ',', $sort );
+	
+	
+	foreach ( $orders as $order ) {
+
+		// Extract the order information.
+		$orderelements = explode ( ' ', trim ( $order ) );
+		$aspect = $orderelements [0];
+		$ascdesc = $orderelements [1];
+
+		// Compensate for presented vs actual.
+		switch ($aspect) {
+			case 'date' :
+				$aspect = 'dateofpurchase';
+				break;
+			case 'amount' :
+				$aspect = 'amount';
+				break;
+			case 'coursename' :
+				$aspect = 'coursename';
+				break;
+			case 'user' :
+				$aspect = 'firstname';
+				break;
+			case 'comment' :
+				$aspect = 'comment';
+				break;
+		}
+
+		// Check of order can be established.
+		if (is_array ( $a )) {
+			$first = $a [$aspect];
+			$second = $b [$aspect];
+		} else {
+			$first = $a->$aspect;
+			$second = $b->$aspect;
+		}
+
+		if (preg_match ( '/name/', $aspect )) {
+			$first = strtolower ( $first );
+			$second = strtolower ( $second );
+		}
+
+		if ($first < $second) {
+			return $ascdesc == 'ASC' ? 1 : - 1;
+		}
+		if ($first > $second) {
+			return $ascdesc == 'ASC' ? - 1 : 1;
+		}
+	}
+
+	// If previous ordering fails, consider values equal.
+	return 0;
 }

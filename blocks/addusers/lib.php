@@ -4,6 +4,7 @@
 define ( 'DEFAULT_COST', 3500 );
 global $DB;
 require_once $CFG->dirroot.'/group/lib.php';
+require_once $CFG->dirroot.'/user/lib.php';
 
 function block_addusers_get_credits($groupname) {
 	global $DB;
@@ -229,7 +230,7 @@ function block_addusers_generateRandomString($length = 8) {
  * Get all the deatils from a user with the given user id(s)
  * @param array[int] $userids
  */
-function block_addusers_get_user_details($userids)
+function block_addusers_get_users_details($userids)
 {
 	global $DB;
 	$users = array();
@@ -238,6 +239,27 @@ function block_addusers_get_user_details($userids)
 		$users[] = $DB->get_record('user', array('id' => $userid));
 	}
 	return $users;
+}
+
+/**
+ * Get all the details from a single user with the given user id
+ * @param int $userid
+ */
+function block_addusers_get_user_details($userid)
+{
+	global $DB;
+	$user = $DB->get_record('user', array('id' => $userid));
+	
+	return $user;
+}
+
+/**
+ * Update single user record
+ * @param object with user
+ */
+function block_addusers_update_user_details($user)
+{
+	return user_update_user($user, false, false);
 }
 
 /**
@@ -252,13 +274,35 @@ function block_addusers_get_users($groupid, $namesearch = '') {
 			FROM {block_addusers_createdusers} cu 
 			JOIN {user} u ON cu.user_userid = u.id 
 			WHERE cu.groupid = :groupid 
-			AND (u.firstname LIKE :search OR u.lastname LIKE :search2)";
+			AND (u.firstname LIKE :search OR u.lastname LIKE :search2)
+			AND u.deleted = 0";
 	$params['groupid'] = $groupid;
 	$params['search'] = '%' . $namesearch . '%';
 	$params['search2'] = '%' . $namesearch . '%';
 	
 	return $DB->get_records_sql($sql, $params);
 }
+
+/**
+ * Update all users to delete users deleted in moodle elsewhere
+ * @param int $groupid
+ */
+function block_addusers_update_list($groupid) {
+	global $DB;
+
+	$sql = "SELECT DISTINCT u.id, u.firstname, u.lastname, u.email
+			FROM {block_addusers_createdusers} cu
+			JOIN {user} u ON cu.user_userid = u.id
+			WHERE cu.groupid = :groupid
+			AND (u.firstname LIKE :search OR u.lastname LIKE :search2)";
+	$params['groupid'] = $groupid;
+	$params['search'] = '%' . $namesearch . '%';
+	$params['search2'] = '%' . $namesearch . '%';
+
+	return $DB->get_records_sql($sql, $params);
+}
+
+
 
 /**
  * Get the courses the current user is enrolled to with the role of teacher or non-editing teacher

@@ -6,6 +6,9 @@ require_once ($CFG->dirroot . '/blocks/addusers/lib.php');
 require_once ($CFG->libdir . '/tablelib.php');
 require_once ($CFG->libdir . '/formslib.php');
 
+$PAGE->set_url ( '/blocks/addusers/view_enrollmenst.php', array () );
+require_login ( '', false );
+
 class enrolluserform extends moodleform {
 	function definition() {
 		global $CFG;
@@ -42,13 +45,12 @@ $courseid = optional_param ( 'courseid', '-1', PARAM_INT );
 $showform = optional_param ( 'showform', '0', PARAM_INT );
 $submitted = optional_param ( 'submitted', 0, PARAM_INT );
 
-$PAGE->set_url ( '/blocks/addusers/view_enrollmenst.php', array () );
 $PAGE->requires->css ( '/blocks/addusers/styles.css' );
 
 require_login ( 0, false );
 $PAGE->set_context ( context_system::instance () );
 
-$user = block_addusers_get_user_details ( array (
+$user = block_addusers_get_users_details ( array (
 		$userid 
 ) ) [0];
 

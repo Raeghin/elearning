@@ -1,45 +1,84 @@
 <?php
 
-
 // Include required files.
-require_once(dirname(__FILE__) . '/../../config.php');
-require_once($CFG->dirroot.'/blocks/addusers/lib.php');
-require_once($CFG->libdir.'/tablelib.php');
-require_once($CFG->libdir.'/formslib.php');
+require_once (dirname ( __FILE__ ) . '/../../config.php');
+require_once ($CFG->dirroot . '/blocks/addusers/lib.php');
+require_once ($CFG->libdir . '/tablelib.php');
+require_once ($CFG->libdir . '/formslib.php');
 
-define ( 'DEFAULT_PAGE_SIZE', 20 );
+require_once ($CFG->dirroot . '/user/filters/lib.php');
+require_once ($CFG->dirroot . '/user/lib.php');
+
+define ( 'DEFAULT_PAGE_SIZE', 15 );
 define ( 'SHOW_ALL_PAGE_SIZE', 5000 );
 
+$PAGE->set_url ( '/blocks/addusers/listusers.php', array () );
+require_login ( '', false );
 
-class useroverviewform extends moodleform
-{
+class useroverviewform extends moodleform {
+	function definition() {
+		global $CFG;
+		
+		$mform = $this->_form;
+		$mform->addElement ( 'text', 'name', get_string ( 'name' ) );
+		$mform->setType ( 'name', PARAM_TEXT );
+		
+		$mform->addElement ( 'submit', 'submitbutton', get_string ( 'show' ) );
+		
+		$mform->setType ( 'page', PARAM_RAW );
+		$mform->addElement ( 'hidden', 'page', $this->_customdata ['page'] );
+		
+		$mform->setType ( 'perpage', PARAM_RAW );
+		$mform->addElement ( 'hidden', 'perpage', $this->_customdata ['perpage'] );
+		
+		$mform->setType ( 'submitted', PARAM_RAW );
+		$mform->addElement ( 'hidden', 'submitted', 1 );
+	}
+}
+
+class edituserform extends moodleform {
 	function definition() {
 		global $CFG;
 
 		$mform = $this->_form;
-		$mform->addElement('text', 'name', get_string('name'));
-		$mform->setType('name', PARAM_TEXT);
+		$mform->addElement ( 'text', 'firstname', get_string ( 'firstname' ) );
+		$mform->setType ( 'firstname', PARAM_TEXT );
+		$mform->setDefault( 'firstname', $this->_customdata ['firstname']);
 		
-		$mform->addElement('submit', 'submitbutton', get_string('show'));
+		$mform->addElement ( 'text', 'lastname', get_string ( 'lastname' ) );
+		$mform->setType ( 'lastname', PARAM_TEXT );
+		$mform->setDefault( 'lastname', $this->_customdata ['lastname']);
 		
-		$mform->setType('page', PARAM_RAW);
-		$mform->addElement('hidden', 'page', $this->_customdata['page']);
+		$mform->addElement ( 'text', 'email', get_string ( 'email' ) );
+		$mform->setType ( 'email', PARAM_EMAIL );
+		$mform->setDefault( 'email', $this->_customdata ['email']);
 		
-		$mform->setType('perpage', PARAM_RAW);
-		$mform->addElement('hidden', 'perpage', $this->_customdata['perpage']);
-				
-		$mform->setType('submitted', PARAM_RAW);
-		$mform->addElement('hidden', 'submitted', 1);
+		$mform->addElement ( 'submit', 'submitbutton', get_string ( 'edit' ) );
+
+		$mform->setType ( 'page', PARAM_RAW );
+		$mform->addElement ( 'hidden', 'page', $this->_customdata ['page'] );
+	
+		$mform->setType ( 'userid', PARAM_RAW );
+		$mform->addElement ( 'hidden', 'userid', $this->_customdata ['userid'] );
+		
+		$mform->setType ( 'perpage', PARAM_RAW );
+		$mform->addElement ( 'hidden', 'perpage', $this->_customdata ['perpage'] );
+
+		$mform->setType ( 'editsubmitted', PARAM_RAW );
+		$mform->addElement ( 'hidden', 'editsubmitted', 1 );
 	}
 }
 
-// Gather form data.
-$userid = $USER->id;
-$submitted = optional_param ( 'submitted', 0, PARAM_INT );
-$page     = optional_param('page', 0, PARAM_INT); // Which page to show.
-$perpage  = optional_param('perpage', DEFAULT_PAGE_SIZE, PARAM_INT); // How many per page
 
-$PAGE->set_url ( '/blocks/addusers/listusers.php', array () );
+// Gather form data.
+$userid 		= 	$USER->id;
+$submitted 		= 	optional_param ( 'submitted', 0, PARAM_INT );
+$page 			= 	optional_param ( 'page', 0, PARAM_INT ); // Which page to show.
+$perpage 		= 	optional_param ( 'perpage', DEFAULT_PAGE_SIZE, PARAM_INT ); // How many per page
+$edit			= 	optional_param('edit', 0, PARAM_INT);
+$selecteduserid	= 	optional_param('userid', 0, PARAM_INT);
+$editsubmitted	= 	optional_param('editsubmitted', 0, PARAM_INT);
+
 $PAGE->requires->css ( '/blocks/addusers/styles.css' );
 $PAGE->set_context ( context_system::instance () );
 $title = get_string ( 'list_users', 'block_addusers' );
@@ -48,45 +87,91 @@ $PAGE->set_heading ( $title );
 $PAGE->navbar->add ( $title );
 $PAGE->set_pagelayout ( 'standard' );
 
-
-
 // Start page output.
 echo $OUTPUT->header ();
 echo $OUTPUT->heading ( $title, 2 );
 echo $OUTPUT->container_start ( 'block_listusers' );
 
-$userform = new useroverviewform ( null, array (
-		'userid' => $userid, 'page' => $page, 'perpage' => $perpage
-) );
+$groupid = block_addusers_get_groupid ( $USER->profile ['Opleidernaam'] );
+$users = block_addusers_get_users ( $groupid);
 
-$users = array();
+if($edit || $editsubmitted)
+{
+	$user = block_addusers_get_user_details($selecteduserid);
+	
+	$editform = new edituserform ( null, array (
+			'firstname' => $user->firstname,
+			'lastname' => $user->lastname,
+			'email' => $user->email,
+			'userid' => $selecteduserid,
+			'page' => $page,
+			'perpage' => $perpage
+	) );
+	if(!$editsubmitted)
+		echo $editform->display ();
+} 
 
-$groupid = block_addusers_get_groupid($USER->profile['Opleidernaam']);
+$error = false;
+if($editsubmitted)
+{
+	$data = $editform->get_data ();
+	
+	$user = block_addusers_get_user_details($data->userid);
+	$oldemail = $user->email;
+	
+	$user->firstname = $data->firstname;
+	$user->lastname = $data->lastname;
+	$user->email = $data->email;
+	
+	if(block_addusers_checkuseremail($data->email) and strcmp($data->email, $oldemail) !== 0)
+	{
+		echo $OUTPUT->container_start ( 'block_adduser_error' );
+		echo get_string('email_taken', 'block_addusers');
+		
+		echo $OUTPUT->container_end ();
+		echo $editform->display ();
+		$error = true;
+	}
+		
+	else
+		block_addusers_update_user_details($user);
+	
+	$users = block_addusers_get_users ($groupid);
+} 
+
+$userform = new useroverviewform ( 
+		null, array (
+			'userid' => $userid,
+			'page' => $page,
+			'perpage' => $perpage 
+	) 
+);
+
+if(!$edit && !$error)
+	echo $userform->display ();
+
 if ($submitted == 1) {
 	$data = $userform->get_data ();
-	
-	$users = block_addusers_get_users($groupid, $data->name);
-} else {
-	$users = block_addusers_get_users($groupid);
+	$users = block_addusers_get_users ( $groupid, $data->name );
 }
-
-echo $userform->display ();
-
 
 block_addusers_list_users_table ( $users );
 
 echo $OUTPUT->container_end ();
-echo $OUTPUT->footer();
+echo $OUTPUT->footer ();
 
 function block_addusers_list_users_table($users) {
 	global $PAGE, $page, $CFG, $perpage, $OUTPUT;
+	
+	$ufiltering = new user_filtering ();
+	
 	$numberofentries = count ( $users );
 	$paged = $numberofentries > $perpage;
-
+	
 	if (! $paged) {
 		$page = 0;
 	}
-
+	
 	// Setup table.
 	$table = new flexible_table ( 'block-buyusers-users-overview' );
 	$table->pagesize ( $perpage, $numberofentries );
@@ -94,18 +179,20 @@ function block_addusers_list_users_table($users) {
 			'firstname',
 			'lastname',
 			'email',
-			'enrollments'
+			'edit',
+			'enrollments' 
 	);
 	$table->define_columns ( $tablecolumns );
 	$tableheaders = array (
 			get_string ( 'firstname' ),
 			get_string ( 'lastname' ),
 			get_string ( 'email' ),
-			get_string ( 'enrollments', 'block_addusers' )
+			get_string ( 'edit' ),
+			get_string ( 'enrollments', 'block_addusers' ) 
 	);
 	$table->define_headers ( $tableheaders );
 	$table->sortable ( true );
-
+	
 	$table->set_attribute ( 'class', 'overviewTable' );
 	$table->column_style_all ( 'padding', '5px' );
 	$table->column_style_all ( 'text-align', 'left' );
@@ -113,113 +200,145 @@ function block_addusers_list_users_table($users) {
 	$table->column_style ( 'firstname', 'width', '30%' );
 	$table->column_style ( 'lastname', 'width', '30%' );
 	$table->column_style ( 'email', 'width', '30%' );
-	$table->column_style ( 'enrollments', 'width', '10%' );
-	$table->column_nosort ( 'enrollments');
-	$table->define_baseurl($PAGE->url);
-	$table->setup();
-
+	$table->column_style ( 'edit', 'width', '5%' );
+	$table->column_style ( 'enrollments', 'width', '5%' );
+	
+	$table->define_baseurl ( $PAGE->url );
+	$table->setup ();
+	
 	// Get range of rows for page.
 	$start = $page * $perpage;
 	$end = ($start + $perpage > $numberofentries) ? $numberofentries : ($start + $perpage);
-
+	
 	global $sort;
-	$sort = $table->get_sql_sort();
-	$nosort = strncmp($sort, 'enrollme', 8) == 0;
-	if (!$sort || ($paged && $nosort)) {
+	$sort = $table->get_sql_sort ();
+	$nosort = strncmp ( $sort, 'enrollme', 8 ) == 0;
+	if (! $nosort)
+		$nosort = strncmp ( $sort, 'edit', 4 ) == 0;
+	
+	if (! $sort || ($paged && $nosort)) {
 		$sort = 'lastname DESC';
 	}
-	usort($users, 'block_addusers_compare_rows');
+	usort ( $users, 'block_addusers_listusers_compare_rows' );
 	
 	// Get range of students for page.
 	$startuser = $page * $perpage;
-	$numberofusers = count($users);
+	$numberofusers = count ( $users );
 	$enduser = ($startuser + $perpage > $numberofusers) ? $numberofusers : ($startuser + $perpage);
 	
-	$tablerows = array();
+	$tablerows = array ();
 	
-	for ($i = $startuser; $i < $enduser; $i++) {
-		$user = $users[$i];
-		$enrollmentsparameters = array('userid' => $user->id);
-		$enrollmentslink = new moodle_url('/blocks/addusers/view_enrollments.php', $enrollmentsparameters);
-		$enrollmentdetailsicon = $OUTPUT->pix_icon('enroll', 'details', 'block_addusers', array('class' => 'nowicon'));
+	for($i = $startuser; $i < $enduser; $i ++) {
+		$user = $users [$i];
 		
-		$details = HTML_WRITER::link($enrollmentslink, $enrollmentdetailsicon);
-		
-		$table->add_data(array(
-				$user->firstname, $user->lastname, $user->email, $details)
+		// Edit
+		$editparameters = array (
+				'userid' => $user->id,
+				'edit' => '1'
 		);
+		$editlink = new moodle_url ( '/blocks/addusers/listusers.php', $editparameters );
+		$editicon = $OUTPUT->pix_icon ( 'edit', 'details', 'block_addusers', array (
+				'class' => 'editicon' 
+		) );
+		
+		$edit = HTML_WRITER::link ( $editlink, $editicon );
+		
+		// Enrollments
+		$enrollmentsparameters = array (
+				'userid' => $user->id 
+		);
+		$enrollmentslink = new moodle_url ( '/blocks/addusers/view_enrollments.php', $enrollmentsparameters );
+		$enrollmentdetailsicon = $OUTPUT->pix_icon ( 'enroll', 'details', 'block_addusers', array (
+				'class' => 'nowicon' 
+		) );
+		
+		$details = HTML_WRITER::link ( $enrollmentslink, $enrollmentdetailsicon );
+		
+		$table->add_data ( array (
+				$user->firstname,
+				$user->lastname,
+				$user->email,
+				$edit,
+				$details 
+		) );
 	}
-
+	
 	$table->print_html ();
-
-	$perpageurl = clone($PAGE->url);
-
+	
+	$perpageurl = clone ($PAGE->url);
+	
 	if ($paged) {
-		$perpageurl->param('perpage', SHOW_ALL_PAGE_SIZE);
-		echo $OUTPUT->container(html_writer::link($perpageurl, get_string('showall', '', $numberofentries)), array(), 'showall');
+		$perpageurl->param ( 'perpage', SHOW_ALL_PAGE_SIZE );
+		echo $OUTPUT->container ( html_writer::link ( $perpageurl, get_string ( 'showall', '', $numberofentries ) ), array (), 'showall' );
 	} else if ($numberofentries > DEFAULT_PAGE_SIZE) {
-		$perpageurl->param('perpage', DEFAULT_PAGE_SIZE);
-		echo $OUTPUT->container(html_writer::link($perpageurl, get_string('showperpage', '', DEFAULT_PAGE_SIZE)), array(), 'showall');
+		$perpageurl->param ( 'perpage', DEFAULT_PAGE_SIZE );
+		echo $OUTPUT->container ( html_writer::link ( $perpageurl, get_string ( 'showperpage', '', DEFAULT_PAGE_SIZE ) ), array (), 'showall' );
 	}
 }
 
 /**
-* Compares two table row elements for ordering.
-*
-* @param  mixed $a element containing name, online time and progress info
-* @param  mixed $b element containing name, online time and progress info
-* @return order of pair expressed as -1, 0, or 1
-*/
-function block_addusers_compare_rows($a, $b) {
+ * Compares two table row elements for ordering.
+ *
+ * @param mixed $a
+ *        	element containing name, online time and progress info
+ * @param mixed $b
+ *        	element containing name, online time and progress info
+ * @return order of pair expressed as -1, 0, or 1
+ *        
+ */
+function block_addusers_listusers_compare_rows($a, $b) {
 	global $sort;
 	// Process each of the one or two orders.
-	$orders = explode(',', $sort);
-
-	foreach ($orders as $order) {
-
+	$orders = explode ( ',', $sort );
+	
+	foreach ( $orders as $order ) {
+		
 		// Extract the order information.
-		$orderelements = explode(' ', trim($order));
-		$aspect = $orderelements[0];
-		$ascdesc = $orderelements[1];
-
+		$orderelements = explode ( ' ', trim ( $order ) );
+		$aspect = $orderelements [0];
+		$ascdesc = $orderelements [1];
+		
 		// Compensate for presented vs actual.
 		switch ($aspect) {
-			case 'firstname':
+			case 'firstname' :
 				$aspect = 'firstname';
 				break;
-			case 'lastname':
+			case 'lastname' :
 				$aspect = 'lastname';
 				break;
-			case 'email':
+			case 'email' :
 				$aspect = 'email';
 				break;
-			case 'enrollments':
+			case 'enrollments' :
+				$aspect = 'lastname';
+				break;
+			case 'edit' :
 				$aspect = 'lastname';
 				break;
 		}
-
+		
 		// Check of order can be established.
-		if (is_array($a)) {
-			$first = $a[$aspect];
-			$second = $b[$aspect];
+		if (is_array ( $a )) {
+			$first = $a [$aspect];
+			$second = $b [$aspect];
 		} else {
 			$first = $a->$aspect;
 			$second = $b->$aspect;
 		}
-
-		if (preg_match('/name/', $aspect)) {
-			$first = strtolower($first);
-			$second = strtolower($second);
+		
+		if (preg_match ( '/name/', $aspect )) {
+			$first = strtolower ( $first );
+			$second = strtolower ( $second );
 		}
-
+		
 		if ($first < $second) {
-			return $ascdesc == 'ASC' ? 1 : -1;
+			return $ascdesc == 'ASC' ? 1 : - 1;
 		}
 		if ($first > $second) {
-			return $ascdesc == 'ASC' ? -1 : 1;
+			return $ascdesc == 'ASC' ? - 1 : 1;
 		}
 	}
-
+	
 	// If previous ordering fails, consider values equal.
 	return 0;
 }
