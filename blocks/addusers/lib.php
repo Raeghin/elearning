@@ -5,6 +5,7 @@ define ( 'DEFAULT_COST', 3500 );
 global $DB;
 require_once $CFG->dirroot.'/group/lib.php';
 require_once $CFG->dirroot.'/user/lib.php';
+require_once($CFG->libdir.'/authlib.php');
 
 function block_addusers_get_credits($groupname) {
 	global $DB;
@@ -260,6 +261,14 @@ function block_addusers_get_user_details($userid)
 function block_addusers_update_user_details($user)
 {
 	return user_update_user($user, false, false);
+}
+
+function block_addusers_update_password($user, $password)
+{
+	$userauth = get_auth_plugin($user->auth);
+	$returnval = $userauth -> user_update_password($user, $password);
+	user_add_password_history($user->id, $password);
+	return $returnval;
 }
 
 /**

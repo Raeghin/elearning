@@ -41,18 +41,30 @@ class edituserform extends moodleform {
 		global $CFG;
 
 		$mform = $this->_form;
+		$mform->setDisableShortforms(true);
+		
+		$mform->addElement('header', 'changepassword', get_string('edituser'), '');
+		
+		$mform->addElement('static', 'username', get_string('username'), $this->_customdata ['username']);
+		
 		$mform->addElement ( 'text', 'firstname', get_string ( 'firstname' ) );
+		$mform->addRule('firstname', get_string('required'), 'required', null, 'client');
 		$mform->setType ( 'firstname', PARAM_TEXT );
 		$mform->setDefault( 'firstname', $this->_customdata ['firstname']);
 		
 		$mform->addElement ( 'text', 'lastname', get_string ( 'lastname' ) );
+		$mform->addRule('lastname', get_string('required'), 'required', null, 'client');
 		$mform->setType ( 'lastname', PARAM_TEXT );
 		$mform->setDefault( 'lastname', $this->_customdata ['lastname']);
 		
 		$mform->addElement ( 'text', 'email', get_string ( 'email' ) );
+		$mform->addRule('email', get_string('required'), 'required', null, 'client');
 		$mform->setType ( 'email', PARAM_EMAIL );
 		$mform->setDefault( 'email', $this->_customdata ['email']);
 		
+		$mform->addElement ( 'text', 'password', get_string ( 'password' ) );
+		$mform->setType ( 'password', PARAM_TEXT );
+				
 		$mform->addElement ( 'submit', 'submitbutton', get_string ( 'edit' ) );
 
 		$mform->setType ( 'page', PARAM_RAW );
@@ -63,9 +75,35 @@ class edituserform extends moodleform {
 		
 		$mform->setType ( 'perpage', PARAM_RAW );
 		$mform->addElement ( 'hidden', 'perpage', $this->_customdata ['perpage'] );
-
+	
 		$mform->setType ( 'editsubmitted', PARAM_RAW );
 		$mform->addElement ( 'hidden', 'editsubmitted', 1 );
+		
+		$mform->setType ( 'oldemail', PARAM_EMAIL );
+		$mform->addElement ( 'hidden', 'oldemail', 1 );
+		$mform->setDefault( 'oldemail', $this->_customdata ['email']);
+	}
+	
+	function validation($data, $files) {
+		$errors = parent::validation($data, $files);
+		
+		if(block_addusers_checkuseremail($data['email']) and strcmp($data['email'], $data['oldemail']) !== 0)
+		{
+			$errors['email'] = get_string('email_taken', 'block_addusers');
+		}
+		
+		if (!$data['password'])
+			return $errors;
+		
+		if (user_is_previously_used_password($data['userid'], $data['password'])) {
+			$errors['password'] = get_string('errorpasswordreused', 'core_auth');
+		}
+				
+		if (!check_password_policy($data['password'], $errmsg)) {
+			$errors['password'] = $errmsg;
+		}
+		
+		return $errors;
 	}
 }
 
@@ -94,50 +132,61 @@ echo $OUTPUT->container_start ( 'block_listusers' );
 
 $groupid = block_addusers_get_groupid ( $USER->profile ['Opleidernaam'] );
 $users = block_addusers_get_users ( $groupid);
+$error = false;
 
 if($edit || $editsubmitted)
 {
 	$user = block_addusers_get_user_details($selecteduserid);
 	
-	$editform = new edituserform ( null, array (
+	$editform = new edituserform();
+	$editform->set_data(array (
 			'firstname' => $user->firstname,
 			'lastname' => $user->lastname,
 			'email' => $user->email,
+			'username' => $user->username,
 			'userid' => $selecteduserid,
 			'page' => $page,
 			'perpage' => $perpage
 	) );
+	if($editsubmitted)
+	{
+		$data = $editform->get_data ();
+	
+		if(!$data)
+		{
+			echo $editform->display ();
+			$error = true;
+		} else {
+	
+		$user = block_addusers_get_user_details($data->userid);
+	
+		$oldemail = $user->email;
+		$user->firstname = $data->firstname;
+		$user->lastname = $data->lastname;
+		$user->email = $data->email;
+	
+		block_addusers_update_user_details($user);
+	
+		$password = $data->password;
+		if($password)
+			if(!block_addusers_update_password($user, $password))
+			{
+				echo $OUTPUT->container_start ( 'block_adduser_error' );
+				echo get_string('unknownerror');
+				
+				echo $OUTPUT->container_end ();
+				echo $editform->display ();
+				$error = true;
+			}
+	
+			$users = block_addusers_get_users ($groupid);
+		}
+	}
 	if(!$editsubmitted)
 		echo $editform->display ();
 } 
 
-$error = false;
-if($editsubmitted)
-{
-	$data = $editform->get_data ();
-	
-	$user = block_addusers_get_user_details($data->userid);
-	$oldemail = $user->email;
-	
-	$user->firstname = $data->firstname;
-	$user->lastname = $data->lastname;
-	$user->email = $data->email;
-	
-	if(block_addusers_checkuseremail($data->email) and strcmp($data->email, $oldemail) !== 0)
-	{
-		echo $OUTPUT->container_start ( 'block_adduser_error' );
-		echo get_string('email_taken', 'block_addusers');
-		
-		echo $OUTPUT->container_end ();
-		echo $editform->display ();
-		$error = true;
-	}
-		
-	else
-		block_addusers_update_user_details($user);
-	
-	$users = block_addusers_get_users ($groupid);
-} 
+
 
 $userform = new useroverviewform ( 
 		null, array (
