@@ -1,6 +1,8 @@
 <?php
 require_once (dirname ( __FILE__ ) . '/../../config.php');
 require_once($CFG->dirroot.'/blocks/addusers/lib.php');
+require_once($CFG->libdir.'/formslib.php');
+
 class block_addusers extends block_base {
 	
 	/**
@@ -35,7 +37,20 @@ class block_addusers extends block_base {
 		}
 		setlocale(LC_MONETARY, 'nl_NL');
 		$this->content = new stdClass ();
-		$this->content->text = "<b>" . get_string('institution' , 'block_addusers') . ':</b> ' . $USER->profile['Opleidernaam'] . "<br/>";
+		$this->content->text = '';
+		
+		if(has_capability('block/addusers:addcredits', context_system::instance()))
+		{
+			$this->content->text =  html_writer::start_tag('form', array('class'=>'changeform', 'method'=>'get', 'action'=>'#', 'role' => 'form'));
+	        $this->content->text .= html_writer::start_tag('div');
+	        $this->content->text .= html_writer::tag('label', s(get_string('searchinsettings', 'admin')), array('for'=>'adminsearchquery', 'class'=>'accesshide'));
+	        $this->content->text .= html_writer::empty_tag('input', array('id'=>'changeformid', 'type'=>'text', 'name'=>'institution', 'value'=>s($USER->profile['Opleidernaam'])));
+	        $this->content->text .= html_writer::empty_tag('input', array('type'=>'submit', 'value'=>s(get_string('change', 'block_addusers'))));
+	        $this->content->text .= html_writer::end_tag('div');
+	        $this->content->text .= html_writer::end_tag('form');
+		} 
+		
+		$this->content->text .= "<b>" . get_string('institution' , 'block_addusers') . ':</b> ' . $USER->profile['Opleidernaam'] . "<br/>";
 		$this->content->text .= "<b>" .  get_string('credits' , 'block_addusers') . ':</b> ' . money_format('%i', (block_addusers_get_credits($USER->profile['Opleidernaam']) / 100));
 		
 		$this->content->text .= "<p>";

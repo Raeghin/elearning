@@ -11,7 +11,7 @@ $PAGE->set_url ( '/blocks/addusers/coursecosts.php', array () );
 $PAGE->set_context ( context_system::instance () );
 
 require_login ( '', false );
-require_capability ( 'block/addusers:addcredits', context_system::instance ());
+echo require_capability ( 'block/addusers:addcredits', context_system::instance ());
 
 class courseoverviewform extends moodleform
 {

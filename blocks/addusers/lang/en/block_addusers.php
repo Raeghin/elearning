@@ -58,3 +58,4 @@ $string['enroll_student_more'] = 'Add student to other courses';
 $string['addusers:addcredits'] = 'Administer credits';
 $string['password'] = 'Password';
 $string['password_help'] = 'Please only fill in when new password is wanted.';
+$string['change'] = 'Change';
