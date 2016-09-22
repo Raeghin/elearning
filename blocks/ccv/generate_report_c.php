@@ -88,7 +88,7 @@ $sql = "SELECT u.id, u.firstname, u.lastname, 'none' as none
 	JOIN {groups_members} g ON (g.groupid = :groupid AND g.userid = u.id)
 	JOIN {user_enrolments} ue ON ue.userid = u.id
 	JOIN {enrol} e ON (e.id = ue.enrolid AND e.courseid = :courseid)
-	WHERE u.deleted = 0 AND ue.timestart >= :timestart AND ue.timestart <= :timeend 
+	WHERE u.deleted = 0 AND ue.timeend >= :timestart AND ue.timeend <= :timeend 
 	ORDER BY u.lastname";
 
 $params['contextid'] = $context->id;
@@ -169,4 +169,4 @@ $output = '<style type="text/css">
 
 	// Close and output PDF document
 	// This method has several options, check the source code documentation for more information.
-	$pdf->Output ( $course->fullname . ' - ' . get_string ( 'report_a', 'block_ccv' ) . '.pdf', 'D' );
+	$pdf->Output ( $course->fullname . ' - ' . get_string ( 'report_c', 'block_ccv' ) . '.pdf', 'D' );
