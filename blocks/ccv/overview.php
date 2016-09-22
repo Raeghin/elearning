@@ -29,8 +29,13 @@ class groupform extends moodleform
 		$mform->addElement('select', 'report', get_string('report'), $this->_customdata['reportoptions']);
 		$mform->setType('report', PARAM_TEXT);
 		
+		$mform->addElement('advcheckbox', 'addtime', get_string('yes'));
+		
 		$mform->setType('submitted', PARAM_RAW);
 		$mform->addElement('hidden', 'submitted', 1);
+		
+		$mform->addElement('select', 'sort', get_string('sort'), array('lastname'=>'Achternaam','time'=>'Tijd'));
+		$mform->setType('sort', PARAM_TEXT);
 		
 		$mform->addElement ( 'submit', 'submitbutton', get_string ( 'submit' ) );
 	}
@@ -84,8 +89,10 @@ if($groupsubmitted)
 	$report = $data->report;
 	$fromdate = $data->fromdate;
 	$todate = $data->todate;
-		
-	$parameters = array('courseid' => $courseid, 'groupid' => $groupid, 'fromdate'=> $fromdate, 'todate'=>$todate);
+	$addtime = $data->addtime;
+	$sort = $data->sort;
+	
+	$parameters = array('sort'=>$sort, 'addtime' => $addtime, 'courseid' => $courseid, 'groupid' => $groupid, 'fromdate'=> $fromdate, 'todate'=>$todate);
 	
 	switch ($report) {
 		case 'a':

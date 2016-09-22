@@ -25,6 +25,7 @@ $courseid = required_param ( 'courseid', PARAM_INT );
 $groupid = required_param ( 'groupid', PARAM_INT );
 $fromdate = required_param ( 'fromdate', PARAM_INT );
 $todate = required_param ( 'todate', PARAM_INT );
+$addtime = required_param ( 'addtime', PARAM_INT );
 
 global $DB;
 
@@ -155,8 +156,19 @@ $output = '<style type="text/css">
 		else
 			$class = 'tg-yw4l';
 		
+		$time = block_progress_get_timespent($record->id, true, $course->id);
+		$timespent = utils::format_timespend($time);
+			
+		if($addtime)
+		{
+			while($timespent < $timereq->hours_required)
+			{
+				$time = $time + 3600;
+				$timespent = utils::format_timespend($time);
+				$count = $count + 1;
+			}
+		}
 		
-		$timespent = utils::format_timespend(block_progress_get_timespent($record->id, true, $course->id));
 		if($timespent < $timereq->hours_required || $timespent == get_string('none'))
 			$color = 'red';
 		else

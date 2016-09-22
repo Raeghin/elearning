@@ -25,6 +25,8 @@ $courseid = required_param ( 'courseid', PARAM_INT );
 $groupid = required_param ( 'groupid', PARAM_INT );
 $fromdate = required_param ( 'fromdate', PARAM_INT );
 $todate = required_param ( 'todate', PARAM_INT );
+$addtime = required_param ( 'addtime', PARAM_INT );
+$sort = required_param ( 'sort', PARAM_TEXT );
 
 global $DB;
 
@@ -81,7 +83,6 @@ $pdf->SetFont ( 'helvetica', '', 8, '', true );
 // Add a page
 // This method has several options, check the source code documentation for more information.
 $pdf->AddPage ();
-
 
 $sql = "SELECT u.id, u.firstname, u.lastname, ue.timestart, ue.timeend
 	FROM {user} u
@@ -151,6 +152,21 @@ $output = '<style type="text/css">
    </tr>';
 
 	$count = 0;
+	
+	foreach ( $userrecords as $record ) {
+		$time = block_progress_get_timespent($record->id, true, $course->id);
+		$record->time = $time;
+	}
+	
+	if($sort == 'time')
+	{
+		usort($userrecords, function($a, $b)
+		{
+			return $a->time - $b->time;
+		});
+	}
+	
+	
 	foreach ( $userrecords as $record ) {
 		$count ++;
 		if($count % 2 == 0)
@@ -171,9 +187,19 @@ $output = '<style type="text/css">
 			$text = get_string('finished', 'block_ccv');
 		}	
 		
+		$time = $record->time;
+	
+		if($addtime)
+		{
+			while(0 < $time && $time < ($timereq->hours_required * 3600))
+			{
+				$time = $time + 3600;
+			}
+		}
 		
-		$timespent = utils::format_timespend(block_progress_get_timespent($record->id, true, $course->id));
-		if($timespent < $timereq->hours_required || $timespent == get_string('none'))
+		$timespent = utils::format_timespend($time);
+		
+		if($time < ($timereq->hours_required * 3600) || $timespent == get_string('none'))
 			$tcolor = 'red';
 		else
 			$tcolor = 'green';
