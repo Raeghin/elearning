@@ -70,7 +70,7 @@ foreach ($courses as $course)
 	$coursenames[$course->id] = $course->fullname;
 }
 
-$reporttypes = array('a'=>'8.2.6.a','b'=>'8.2.6.b','c'=>'8.2.6.c','d'=>'8.2.6.d');
+$reporttypes = array('h'=>'8.2.5.h','a'=>'8.2.6.a','b'=>'8.2.6.b','c'=>'8.2.6.c','d'=>'8.2.6.d');
 
 $groupform = new groupform(null, array('options' => $groupnames, 'courseoptions' =>$coursenames, 'reportoptions'=>$reporttypes));
 echo $groupform->display();
@@ -99,6 +99,9 @@ if($groupsubmitted)
 			break;
 		case 'd':
 			$url = new moodle_url('/blocks/ccv/generate_report_d.php', $parameters);
+			break;
+		case 'h':
+			$url = new moodle_url('/blocks/ccv/generate_report_8.2.5.h.php', $parameters);
 			break;
 	}
 	

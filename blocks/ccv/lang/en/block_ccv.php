@@ -28,6 +28,9 @@ $string['report_c'] = 'Rapportage 8.2.6.c';
 $string['report_c_text'] = '8.2.6.c een overzicht van opvallende inactieftijden (de tijden dat het systeem op rust/pauze staat, omdat de deelnemer inactief is; alle afwijkingen van 15 minuten of meer)';
 $string['report_d'] = 'Rapportage 8.2.6.d';
 $string['report_d_text'] = '8.2.6.d een overzicht van niet geheel doorlopen E-learning modules.';
+$string['report_h'] = 'Rapportage 8.2.5.h';
+$string['report_h_text'] = '8.2.5.h het beschikbaar hebben van een rapportage over het uren-verloop/voortgang E-learning van de deelnemersgroep tijdens het tweede (klassikale) deel van de betreffende nascholingscursus.';
+
 $string['days_in_course'] = 'Dagen aangemeld'; 
 $string['enddate'] = 'Eind datum';
 $string['time_in_course'] = 'Tijd gespendeerd in de cursus';
