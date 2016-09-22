@@ -34,7 +34,7 @@ class groupform extends moodleform
 		$mform->setType('submitted', PARAM_RAW);
 		$mform->addElement('hidden', 'submitted', 1);
 		
-		$mform->addElement('select', 'sort', get_string('sort'), array('lastname'=>'Achternaam','time'=>'Tijd'));
+		$mform->addElement('select', 'sort', get_string('sort'), array('lastname'=>'Achternaam','time'=>'Tijd','test'=>'test'));
 		$mform->setType('sort', PARAM_TEXT);
 		
 		$mform->addElement ( 'submit', 'submitbutton', get_string ( 'submit' ) );

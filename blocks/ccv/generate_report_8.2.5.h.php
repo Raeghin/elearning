@@ -153,6 +153,28 @@ $output = '<style type="text/css">
 
 	$count = 0;
 	
+	if($sort == 'test')
+	{
+		$totaltime = 0;
+		$count = 0;
+		foreach ( $userrecords as $record ) {
+			$time = block_progress_get_timespent($record->id, true, $course->id);
+			
+			
+			$certificate = getcertificatecode($course->id, $record->id);
+			echo $certificate->id;
+			if($certificate->id <> 0)
+			{
+				$count = $count + 1;
+				$totaltime = $totaltime + $time;
+			}
+		}
+		
+		echo 'Totaal aantal geslaagde gebruikers: ' . $count;
+		echo ' Totale tijd ' . utils::format_timespend($totaltime);
+		echo ' Gemiddelde tijd ' . utils::format_timespend($totaltime / $count);
+	}
+	
 	if($sort == 'time')
 	{
 		foreach ( $userrecords as $record ) {
