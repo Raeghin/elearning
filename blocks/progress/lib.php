@@ -1895,7 +1895,7 @@ function getcertificatecode($courseid, $userid)
 			$contextid = $certdata->contextid;
 			$filename = $certdata->filename;
 
-			$certificate->filelink = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'
+			$certificate->filelink = moodle_url::make_file_url($CFG->wwwroot.'/pluginfile.php', '/'
 					.$contextid.'/mod_certificate/issue/'
 					.$certificate->id.'/'.$filename);
 
