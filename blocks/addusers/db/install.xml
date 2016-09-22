@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="blocks/addusers/db" VERSION="20160629" COMMENT="XMLDB file for Moodle blocks/addusers"
+<XMLDB PATH="blocks/addusers/db" VERSION="20160922" COMMENT="XMLDB file for Moodle blocks/addusers"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -52,6 +52,7 @@
         <FIELD NAME="course_courseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="costs" TYPE="int" LENGTH="8" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="days" TYPE="int" LENGTH="3" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="hours_required" TYPE="int" LENGTH="2" NOTNULL="false" DEFAULT="4" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

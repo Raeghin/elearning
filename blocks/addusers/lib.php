@@ -376,14 +376,14 @@ function block_addusers_get_enrolled_courses($userid)
 function block_addusers_get_courses()
 {
 	global $DB;
-	$sql = "SELECT c.id, c.fullname, c.shortname, br.costs, br.days, br.id AS brid " .
+	$sql = "SELECT c.id, c.fullname, c.shortname, br.costs, br.days, br.id AS brid, br.hours_required " .
 			"FROM {course} c " .
 			"LEFT JOIN {block_addusers_requirements} br ON br.course_courseid = c.id ORDER BY c.id";
 	
 	return $DB->get_records_sql($sql);
 }
 
-function block_addusers_save_price($courseid, $costs, $brid, $days)
+function block_addusers_save_price($courseid, $costs, $brid, $days, $hours_required)
 {
 	global $DB;
 	
@@ -392,6 +392,7 @@ function block_addusers_save_price($courseid, $costs, $brid, $days)
 	$record->course_courseid = $courseid;
 	$record->costs = $costs;
 	$record->days = $days;
+	$record->hours_required = $hours_required;
 	
 	if($DB->record_exists('block_addusers_requirements', array('id'=>$brid)))
 	{
@@ -402,10 +403,10 @@ function block_addusers_save_price($courseid, $costs, $brid, $days)
 	}
 }
 
-function block_addusers_get_course_and_price($courseid)
+function block_addusers_get_course_details($courseid)
 {
 	global $DB;
-	$sql = "SELECT c.id, c.fullname, c.shortname, br.costs, br.days, br.id AS brid " .
+	$sql = "SELECT c.id, c.fullname, c.shortname, br.costs, br.days, br.id AS brid, br.hours_required " .
 			"FROM {course} c " .
 			"LEFT JOIN {block_addusers_requirements} br ON br.course_courseid = c.id 
 				WHERE c.id = ?";
@@ -415,8 +416,8 @@ function block_addusers_get_course_and_price($courseid)
 	
 	if(!isset($record->brid))
 	{
-		block_addusers_save_price($courseid, 35, '', 10);
-		return block_addusers_get_course_and_price($courseid);
+		block_addusers_save_price($courseid, 35, '', 10, 4);
+		return block_addusers_get_course_details($courseid);
 	}
 	else
 		return $record;

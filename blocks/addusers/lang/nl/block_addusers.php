@@ -58,3 +58,4 @@ $string['addusers:addcredits'] = 'Beheer van kredieten';
 $string['password'] = 'Wachtwoord';
 $string['password_help'] = 'Een nieuw wachtwoord dient enkel ingevuld te worden om aan te passen. Laat dit veld leeg om het huidige wachtwoord te behouden';
 $string['change'] = 'Aanpassen';
+$string['hours_required'] = 'Uren verplicht';

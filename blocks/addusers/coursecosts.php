@@ -32,6 +32,10 @@ class courseoverviewform extends moodleform
 		$mform->setDefault('days', $this->_customdata['days']);
 		$mform->setType('days', PARAM_NUMBER);
 		
+		$mform->addElement('text', 'hours_required', get_string('hours_required', 'block_addusers'));
+		$mform->setDefault('hours_required', $this->_customdata['hours_required']);
+		$mform->setType('hours_required', PARAM_NUMBER);
+		
 		$mform->addElement('submit', 'submitbutton', get_string('add'));
 		
 		$mform->setType('courseid', PARAM_RAW);
@@ -66,15 +70,15 @@ echo $OUTPUT->heading ( $title, 2 );
 echo $OUTPUT->container_start ( 'block_listusers' );
 
 $courseform = new courseoverviewform(null, array (
-		'coursename' => '', 'courseid' => '','brid' => '', 'costs' => '', 'days' => ''
+		'coursename' => '', 'courseid' => '','brid' => '', 'costs' => '', 'days' => '', 'hours_required' => ''
 		) );
 
 if($courseid > 0)
 {
-	$course = block_addusers_get_course_and_price($courseid);
+	$course = block_addusers_get_course_details($courseid);
 	
 	$courseform = new courseoverviewform ( null, array (
-			'coursename' => $course->shortname, 'courseid' => $course->id,'brid' => $course->brid, 'costs' => $course->costs, 'days' => $course->days
+			'coursename' => $course->shortname, 'courseid' => $course->id,'brid' => $course->brid, 'costs' => $course->costs, 'days' => $course->days, 'hours_required' => $course->hours_required
 	) );
 	
 	echo $courseform->display ();
@@ -82,9 +86,9 @@ if($courseid > 0)
 
 if ($submitted == 1) {
 	$data = $courseform->get_data ();
-	block_addusers_save_price($data->courseid, $data->costs, $data->brid, $data->days);
+	block_addusers_save_price($data->courseid, $data->costs, $data->brid, $data->days, $data->hours_required);
 	$courseform = new courseoverviewform ( null, array (
-			'coursename' => $data->coursename, 'courseid' => $data->courseid,'brid' => $data->brid, 'costs' => $data->costs, 'days' => $data->days
+			'coursename' => $data->coursename, 'courseid' => $data->courseid,'brid' => $data->brid, 'costs' => $data->costs, 'days' => $data->days, 'hours_required' => $data->hours_required
 	) );
 }
 
@@ -108,6 +112,7 @@ function block_addusers_list_courses_table($courses) {
 			'courseshortname',
 			'costs',
 			'days',
+			'hours_required',
 			'edit'
 	);
 	$table->define_columns ( $tablecolumns );
@@ -117,6 +122,7 @@ function block_addusers_list_courses_table($courses) {
 			get_string ( 'shortname' ),
 			get_string ( 'cost', 'block_addusers' ),
 			get_string ( 'days' ),
+			get_string ( 'hours_required' , 'block_addusers'),
 			get_string ( 'edit' )
 	);
 	$table->define_headers ( $tableheaders );
@@ -135,7 +141,7 @@ function block_addusers_list_courses_table($courses) {
 	$tablerows = array();
 	foreach ($courses as $course)
 	{
-		$params = array('courseid' => $course->id, 'brid' => $course->brid, 'costs' => $course->costs, 'days' => $course->days);
+		$params = array('courseid' => $course->id, 'brid' => $course->brid, 'costs' => $course->costs, 'days' => $course->days, 'hours_required' => $course->hours_required);
 		
 		$link = new moodle_url('/blocks/addusers/coursecosts.php', $params);
 		$icon = $OUTPUT->pix_icon('edit', 'details', 'block_addusers', array('class' => 'nowicon'));
@@ -143,7 +149,7 @@ function block_addusers_list_courses_table($courses) {
 		$details = HTML_WRITER::link($link, $icon);
 		
 		$table->add_data(array(
-				$course->id, $course->fullname, $course->shortname, $course->costs, $course->days, $details)
+				$course->id, $course->fullname, $course->shortname, $course->costs, $course->days, $course->hours_required, $details)
 		);
 	}
 

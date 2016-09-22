@@ -59,3 +59,4 @@ $string['addusers:addcredits'] = 'Administer credits';
 $string['password'] = 'Password';
 $string['password_help'] = 'Please only fill in when new password is wanted.';
 $string['change'] = 'Change';
+$string['hours_required'] = 'Hours required';

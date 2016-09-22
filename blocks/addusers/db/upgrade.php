@@ -107,8 +107,23 @@ function xmldb_block_addusers_upgrade($oldversion) {
 		// Addusers savepoint reached.
 		upgrade_block_savepoint(true, 201606291104, 'addusers');
 	}
-	return $result;
 	
+	if ($oldversion < 201609221050) {
+	
+		// Define field hoursrequired to be added to block_addusers_requirements.
+		$table = new xmldb_table('block_addusers_requirements');
+		$field = new xmldb_field('hours_required', XMLDB_TYPE_INTEGER, '2', null, null, null, '4', 'days');
+	
+		// Conditionally launch add field hoursrequired.
+		if (!$dbman->field_exists($table, $field)) {
+			$dbman->add_field($table, $field);
+		}
+	
+		// Addusers savepoint reached.
+		upgrade_block_savepoint(true, 201609221050, 'addusers');
+	}
+	
+	return $result;
 	
 }
 ?>

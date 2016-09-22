@@ -15,9 +15,21 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 
+/**
+ * Progress Bar block version details
+ *
+ * @package    contrib
+ * @subpackage block_progress
+ * @copyright  2010 Michael de Raadt
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
-$plugin->version   = 201609221050;
+$plugin->version   = 2016051404;
 $plugin->requires  = 2010121000;
 $plugin->maturity  = MATURITY_STABLE;
-$plugin->release   = 'v1.01';
-$plugin->component = 'block_addusers';
+$plugin->release   = 'CCV Version 1.0';
+$plugin->component = 'block_ccv';
+$plugin->dependencies = array(
+		'mod_certificate' => 2014041801,
+		'block_progress' => 2016051400
+);
