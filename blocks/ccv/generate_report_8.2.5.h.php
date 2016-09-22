@@ -153,13 +153,13 @@ $output = '<style type="text/css">
 
 	$count = 0;
 	
-	foreach ( $userrecords as $record ) {
-		$time = block_progress_get_timespent($record->id, true, $course->id);
-		$record->time = $time;
-	}
-	
 	if($sort == 'time')
 	{
+		foreach ( $userrecords as $record ) {
+			$time = block_progress_get_timespent($record->id, true, $course->id);
+			$record->time = $time;
+		}
+		
 		usort($userrecords, function($a, $b)
 		{
 			return $a->time - $b->time;
@@ -187,7 +187,7 @@ $output = '<style type="text/css">
 			$text = get_string('finished', 'block_ccv');
 		}	
 		
-		$time = $record->time;
+		$time = block_progress_get_timespent($record->id, true, $course->id);
 	
 		if($addtime)
 		{
