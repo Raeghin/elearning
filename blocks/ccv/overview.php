@@ -60,7 +60,7 @@ echo $OUTPUT->container_start('block_progress');
 
 $groups = block_ccv_get_groups();
 $groupnames = array();
-$groupnames[] = get_string('group', 'block_ccv');
+$groupnames[0] = get_string('all_groups', 'block_ccv');
 
 foreach ($groups as $group)
 {

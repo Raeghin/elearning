@@ -36,18 +36,24 @@ $course = $DB->get_record ( 'course', array (
 ), '*', MUST_EXIST );
 $context = block_ccv_get_course_context ( $courseid );
 
-$sql2 = "SELECT groupname " .
-		"FROM {block_addusers_groups} " .
-		"WHERE id = ?";
-
-$groupname = $DB->get_record_sql($sql2, array($groupid));
-
-$sql2 = "SELECT id " .
-		"FROM {groups} " .
+if($groupid > 0)
+{
+	$sql2 = "SELECT groupname " .
+			"FROM {block_addusers_groups} " .
+			"WHERE id = ?";
+	
+	$groupname = $DB->get_record_sql($sql2, array($groupid));
+	
+	$sql2 = "SELECT id " .
+			"FROM {groups} " .
 		"WHERE name = ? and courseid = ?";
 
-$groupid = $DB->get_record_sql($sql2, array($groupname->groupname, $courseid))->id;
 
+	$groupid = $DB->get_record_sql($sql2, array($groupname->groupname, $courseid))->id;
+} else {
+	$groupname = new stdClass();
+	$groupname->groupname = 'Alle Opleiders';
+}
 $pdf = new TCPDF ( 'P', 'cm', 'A4', true, 'UTF-8', false );
 
 // set document information
@@ -84,19 +90,35 @@ $pdf->SetFont ( 'helvetica', '', 8, '', true );
 // This method has several options, check the source code documentation for more information.
 $pdf->AddPage ();
 
-$sql = "SELECT u.id, u.firstname, u.lastname, ue.timestart, ue.timeend
-	FROM {user} u
-	JOIN {groups_members} g ON (g.groupid = :groupid AND g.userid = u.id)
-	JOIN {user_enrolments} ue ON ue.userid = u.id
-	JOIN {enrol} e ON (e.id = ue.enrolid AND e.courseid = :courseid)
-	WHERE u.deleted = 0 AND ue.timeend >= :timestart AND ue.timeend <= :timeend 
-	ORDER BY u.lastname";
+if($groupid > 0)
+{
+	$sql = "SELECT u.id, u.firstname, u.lastname, ue.timestart, ue.timeend
+		FROM {user} u
+		JOIN {groups_members} g ON (g.groupid = :groupid AND g.userid = u.id)
+		JOIN {user_enrolments} ue ON ue.userid = u.id
+		JOIN {enrol} e ON (e.id = ue.enrolid AND e.courseid = :courseid)
+		WHERE u.deleted = 0 AND ue.timeend >= :timestart AND ue.timeend <= :timeend 
+		ORDER BY u.lastname";
+	
+	$params['contextid'] = $context->id;
+	$params['courseid'] = $course->id;
+	$params['timestart'] = $fromdate;
+	$params['timeend'] = $todate;
+	$params['groupid'] = $groupid;
+} else {
+	$sql = "SELECT u.id, u.firstname, u.lastname, ue.timestart, ue.timeend
+		FROM {user} u
+		JOIN {user_enrolments} ue ON ue.userid = u.id
+		JOIN {enrol} e ON (e.id = ue.enrolid AND e.courseid = :courseid)
+		WHERE u.deleted = 0 AND ue.timeend >= :timestart AND ue.timeend <= :timeend
+		ORDER BY u.lastname";
+	
+	$params['contextid'] = $context->id;
+	$params['courseid'] = $course->id;
+	$params['timestart'] = $fromdate;
+	$params['timeend'] = $todate;
+}
 
-$params['contextid'] = $context->id;
-$params['courseid'] = $course->id;
-$params['timestart'] = $fromdate;
-$params['timeend'] = $todate;
-$params['groupid'] = $groupid;
 
 $userrecords = $DB->get_records_sql($sql, $params);
 $timereq = block_addusers_get_course_details($course->id);
@@ -160,9 +182,8 @@ $output = '<style type="text/css">
 		foreach ( $userrecords as $record ) {
 			$time = block_progress_get_timespent($record->id, true, $course->id);
 			
-			
 			$certificate = getcertificatecode($course->id, $record->id);
-			echo $certificate->id;
+		
 			if($certificate->id <> 0)
 			{
 				$count = $count + 1;

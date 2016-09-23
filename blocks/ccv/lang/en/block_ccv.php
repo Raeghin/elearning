@@ -39,3 +39,4 @@ $string['remarkable_login'] = 'Opvallende inactieftijden';
 $string['not_finished_header'] = 'Niet behaalde modules';
 $string['not_finished'] = 'Een of meerdere modules niet behaald';
 $string['finished'] = 'Alle modules behaald';
+$string['all_groups'] = 'Alle groepen';

@@ -1877,7 +1877,7 @@ function getcertificatecode($courseid, $userid)
                        ORDER BY ci.timecreated ASC";
 
 	$certificates = $DB->get_records_sql($sql, array('userid' => $userid, 'courseid' => $courseid));
-
+	
 	if (empty($certificates)) {
 		$certificate = new stdClass();
 		$certificate->id = 0;
