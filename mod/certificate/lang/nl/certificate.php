@@ -1,28 +1,5 @@
 <?php
 
-// This file is part of the Certificate module for Moodle - http://moodle.org/
-//
-// Moodle is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// Moodle is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
-/**
- * Language strings for the certificate module
- *
- * @package    mod_certificate
- * @copyright  Mark Nelson <markn@moodle.com>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 $string['addlinklabel'] = 'Add another linked activity option';
 $string['addlinktitle'] = 'Click to add another linked activity option';
 $string['areaintro'] = 'Certificate introduction';
@@ -180,7 +157,7 @@ $string['removecert'] = 'Issued certificates removed';
 $string['report'] = 'Report';
 $string['reportcert'] = 'Report Certificates';
 $string['reportcert_help'] = 'If you choose yes here, then this certificate\'s date received, code number, and the course name will be shown on the user certificate reports.  If you choose to print a grade on this certificate, then that grade will also be shown on the certificate report.';
-$string['requiredtimenotmet'] = 'You must spend at least a minimum of {$a->requiredtime} minutes in the course before you can access this certificate. Actual time: {$a->currenttime}';
+$string['requiredtimenotmet'] = 'Er dient minimaal {$a->requiredtime} minuten besteed te worden in de cursus. Op dit moment bent u {$a->currenttime} minuten actief geweest in deze cursus.';
 $string['requiredtimenotvalid'] = 'The required time must be a valid number greater than 0';
 $string['reviewcertificate'] = 'Review your certificate';
 $string['savecert'] = 'Save Certificates';

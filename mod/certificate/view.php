@@ -81,7 +81,8 @@ if ($certificate->requiredtime && !has_capability('mod/certificate:manage', $con
     if (certificate_get_course_time($course->id) < ($certificate->requiredtime * 60)) {
         $a = new stdClass;
         $a->requiredtime = $certificate->requiredtime;
-        notice(certificate_get_course_time($course->id) . get_string('requiredtimenotmet', 'certificate', $a), "$CFG->wwwroot/course/view.php?id=$course->id");
+        $a->currenttime = floor(certificate_get_course_time($course->id) / 60);
+        notice(get_string('requiredtimenotmet', 'certificate', $a), "$CFG->wwwroot/course/view.php?id=$course->id");
         die;
     }
 }

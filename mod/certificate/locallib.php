@@ -534,7 +534,7 @@ function certificate_get_course_time($courseid) {
     global $CFG, $DB, $USER;
     
     require_once ($CFG->dirroot . '/blocks/progress/lib.php');
-    block_progress_get_timespent($USER->id, true, $courseid);
+    return block_progress_get_timespent($USER->id, true, $courseid);
 }    
 //    	$logmanager = get_log_manager();
 //     $readers = $logmanager->get_readers();
