@@ -50,6 +50,8 @@ if($groupid > 0)
 
 
 	$groupid = $DB->get_record_sql($sql2, array($groupname->groupname, $courseid))->id;
+	if($groupid == 0)
+		$groupid = -1;
 } else {
 	$groupname = new stdClass();
 	$groupname->groupname = 'Alle Opleiders';
@@ -105,7 +107,7 @@ if($groupid > 0)
 	$params['timestart'] = $fromdate;
 	$params['timeend'] = $todate;
 	$params['groupid'] = $groupid;
-} else {
+} else if ($groupid == 0){
 	$sql = "SELECT u.id, u.firstname, u.lastname, ue.timestart, ue.timeend
 		FROM {user} u
 		JOIN {user_enrolments} ue ON ue.userid = u.id
@@ -117,6 +119,8 @@ if($groupid > 0)
 	$params['courseid'] = $course->id;
 	$params['timestart'] = $fromdate;
 	$params['timeend'] = $todate;
+} else {
+	$sql = '';
 }
 
 
