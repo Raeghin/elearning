@@ -120,7 +120,7 @@ if($groupid > 0)
 	$params['timestart'] = $fromdate;
 	$params['timeend'] = $todate;
 } else {
-	$sql = '';
+	$sql = 'SELECT * FROM {user} u where 0 > 0';
 }
 
 
