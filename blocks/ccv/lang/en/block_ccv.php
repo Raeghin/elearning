@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 $string['pluginname'] = 'ccv';
-$string['overview'] = 'overzicht';
+$string['overview'] = 'Overzicht';
 $string['group'] = 'Opleider';
 
 $string['report_name'] = 'Rapportage';
@@ -40,3 +40,4 @@ $string['not_finished_header'] = 'Niet behaalde modules';
 $string['not_finished'] = 'Een of meerdere modules niet behaald';
 $string['finished'] = 'Alle modules behaald';
 $string['all_groups'] = 'Alle groepen';
+$string['all_courses'] = 'Alle Cursussen';

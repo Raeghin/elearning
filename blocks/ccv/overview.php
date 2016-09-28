@@ -69,7 +69,7 @@ foreach ($groups as $group)
 
 $courses = block_ccv_get_courses();
 $coursenames = array();
-$coursenames[] = get_string('course');
+$coursenames[] = get_string('all_courses', 'block_ccv');
 foreach ($courses as $course)
 {
 	$coursenames[$course->id] = $course->fullname;
@@ -96,16 +96,16 @@ if($groupsubmitted)
 	
 	switch ($report) {
 		case 'a':
-			$url = new moodle_url('/blocks/ccv/generate_report_a.php', $parameters);
+			$url = new moodle_url('/blocks/ccv/generate_report_a_v2.php', $parameters);
 			break;
 		case 'b':
-			$url = new moodle_url('/blocks/ccv/generate_report_b.php', $parameters);
+			$url = new moodle_url('/blocks/ccv/generate_report_b_v2.php', $parameters);
 			break;
 		case 'c':
-			$url = new moodle_url('/blocks/ccv/generate_report_c.php', $parameters);
+			$url = new moodle_url('/blocks/ccv/generate_report_c_v2.php', $parameters);
 			break;
 		case 'd':
-			$url = new moodle_url('/blocks/ccv/generate_report_d.php', $parameters);
+			$url = new moodle_url('/blocks/ccv/generate_report_d_v2.php', $parameters);
 			break;
 		case 'h':
 			$url = new moodle_url('/blocks/ccv/generate_report_8.2.5.h.php', $parameters);

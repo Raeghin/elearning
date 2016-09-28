@@ -236,7 +236,7 @@ $output = '<style type="text/css">
 		
 		$time = block_progress_get_timespent($record->id, true, $course->id);
 	
-		if($addtime)
+		if($addtime && $certificate->id > 0)
 		{
 			while(0 < $time && $time < ($timereq->hours_required * 3600))
 			{

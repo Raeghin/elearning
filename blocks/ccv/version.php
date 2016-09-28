@@ -24,7 +24,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$plugin->version   = 2016051404;
+$plugin->version   = 2016051405;
 $plugin->requires  = 2010121000;
 $plugin->maturity  = MATURITY_STABLE;
 $plugin->release   = 'CCV Version 1.0';
