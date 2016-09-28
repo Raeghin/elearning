@@ -174,13 +174,14 @@ function block_ccv_get_data_by_course_group($groupid, $fromdate, $todate, $cours
 	$sql = "SELECT u.id, u.firstname, u.lastname, ue.timestart, ue.timeend, g.name, g.description
 			FROM {user} u
 			JOIN {groups_members} gm ON (gm.groupid = :groupid AND gm.userid = u.id)
-			JOIN {groups} g ON g.id = gm.groupid
+			JOIN {groups} g ON (g.id = gm.groupid AND g.courseid = :courseid)
 			JOIN {user_enrolments} ue ON ue.userid = u.id
-			JOIN {enrol} e ON (e.id = ue.enrolid AND e.courseid = :courseid)
+			JOIN {enrol} e ON (e.id = ue.enrolid AND e.courseid = :courseid2)
 			WHERE u.deleted = 0 AND ue.timeend >= :timestart AND ue.timeend <= :timeend
 			ORDER BY u.lastname";
 	
 	$params['courseid'] = $courseid;
+	$params['courseid2'] = $courseid;
 	$params['timestart'] = $fromdate;
 	$params['timeend'] = $todate;
 	$params['groupid'] = $groupid;
@@ -194,13 +195,14 @@ function block_ccv_get_data_by_course($fromdate, $todate, $courseid)
 	$sql = "SELECT u.id, u.firstname, u.lastname, ue.timestart, ue.timeend, g.name, g.description
 		FROM {user} u
 		JOIN {groups_members} gm ON (gm.userid = u.id)
-		JOIN {groups} g ON g.id = gm.groupid
+		JOIN {groups} g ON (g.id = gm.groupid AND g.courseid = :courseid)
 		JOIN {user_enrolments} ue ON ue.userid = u.id
-		JOIN {enrol} e ON (e.id = ue.enrolid AND e.courseid = :courseid)
+		JOIN {enrol} e ON (e.id = ue.enrolid AND e.courseid = :courseid2)
 		WHERE u.deleted = 0 AND ue.timeend >= :timestart AND ue.timeend <= :timeend
 		ORDER BY u.lastname";
 	
 	$params['courseid'] = $courseid;
+	$params['courseid2'] = $courseid;
 	$params['timestart'] = $fromdate;
 	$params['timeend'] = $todate;
 	
