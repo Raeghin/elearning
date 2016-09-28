@@ -95,13 +95,13 @@ function generate_body($userrecords, $coursename = null, $groupname = null)
 	$output .= '<table class="tg">
 	  <tr>
 	    <th width="22px" class="tg-9hbo">#<br></th>
-	    <th width="90px" class="tg-9hbo">'.get_string ( 'firstname').'</th>
-	    <th width="90px" class="tg-9hbo">'.get_string ( 'lastname').'</th>
-	    <th width="90px" class="tg-9hbo">'.get_string ( 'days_in_course', 'block_ccv' ).'</th>
-	    <th width="90px" class="tg-9hbo">'.get_string ( 'startdate' ).'</th>
-	    <th width="90px" class="tg-9hbo">'.get_string ( 'enddate', 'block_ccv' ).'</th>';
-	if($groupname)
-		$output .= '<th width="90px" class="tg-9hbo">'.get_string ( 'group' , 'block_ccv').'</th>';
+	    <th width="70px" class="tg-9hbo">'.get_string ( 'firstname').'</th>
+	    <th width="70px" class="tg-9hbo">'.get_string ( 'lastname').'</th>
+	    <th width="70px" class="tg-9hbo">'.get_string ( 'days_in_course', 'block_ccv' ).'</th>
+	    <th width="80px" class="tg-9hbo">'.get_string ( 'startdate' ).'</th>
+	    <th width="80px" class="tg-9hbo">'.get_string ( 'enddate', 'block_ccv' ).'</th>';
+	if($groupname || $coursename)
+		$output .= '<th width="130px" class="tg-9hbo">'.get_string ( 'group' , 'block_ccv').'</th>';
 	 $output .= '</tr>';
 
 	$count = 0;
