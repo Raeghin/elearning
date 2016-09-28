@@ -6,12 +6,11 @@ function block_ccv_get_groups()
 {
 	global $DB;
 	
-	$sql = "SELECT DISTINCT g.id as groupid, uid.data as groupname
+	$sql = "SELECT DISTINCT g.id AS groupid, uid.data AS groupname
 	FROM {block_addusers_groups} g
 	RIGHT JOIN {user_info_data} uid ON uid.data = g.groupname
 	RIGHT JOIN {user_info_field} uif ON uif.id = uid.fieldid
-	JOIN {user} u on uid.userid = u.id
-	WHERE uif.shortname = 'Opleidernaam'";
+	WHERE uif.shortname = 'Opleidernaam' AND uid.data != ''";
 	
 	return ($DB->get_records_sql($sql));
 }
