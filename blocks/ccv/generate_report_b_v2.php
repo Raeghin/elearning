@@ -85,7 +85,7 @@ function generate_header($coursename, $groupname, $fromdate, $todate)
 	$tabledata[] = (object) ['title' => get_string ( 'report_period', 'block_ccv'  ), 'value' => userdate($fromdate, '%d-%m-%y').' - '. userdate($todate, '%d-%m-%y')];
 	
 	
-	return block_ccv_get_page_header(get_string ( 'report_a', 'block_ccv' ), $tabledata);
+	return block_ccv_get_page_header(get_string ( 'report_b', 'block_ccv' ), $tabledata);
 }
 
 function generate_body($userrecords, $coursename = null, $groupname, $timereq, $courseid, $addtime)
@@ -136,7 +136,6 @@ function generate_body($userrecords, $coursename = null, $groupname, $timereq, $
 			{
 				$time = $time + 3600;
 				$timespent = utils::format_timespend($time);
-				$count = $count + 1;
 			}
 		}
 		
