@@ -152,7 +152,7 @@ function generate_body($userrecords, $coursename = null, $groupname, $timereq, $
 		if($groupname)
 		{
 			$group = $record->description != '' ? $record->description : $record->name;
-			$output .= '<td class="'.$color.'">'. $group.'<br></td>';
+			$output .= '<td class="'.$class.'">'. $group.'<br></td>';
 		}
 		
 		$output .= '</tr>';
