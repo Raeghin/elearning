@@ -139,7 +139,7 @@ function generate_body($userrecords, $coursename = null, $groupname, $timereq, $
 			$timespent = utils::format_timespend($time);
 		}
 		
-		if($timespent < $timereq || $timespent == get_string('none'))
+		if(($time/3600) < $timereq || $timespent == get_string('none'))
 			$color = 'red';
 		else
 			$color = 'green';
