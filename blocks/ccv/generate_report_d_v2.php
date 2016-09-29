@@ -55,6 +55,8 @@ if($courseid > 0)
 	
 	foreach($courses as $course)
 	{
+		if($course-> id == 9)
+			continue;
 		$timereq = block_addusers_get_course_details($course->id);
 		if($groupid > 0)
 		{

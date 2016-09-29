@@ -47,6 +47,8 @@ if($courseid > 0)
 	
 } else {
 	$courses = get_courses();
+	
+	
 	if($groupid > 0)
 	{
 		$output .= generate_header(get_string('all_courses', 'block_ccv'), $groupname->groupname, $fromdate, $todate);
@@ -56,6 +58,9 @@ if($courseid > 0)
 	
 	foreach($courses as $course)
 	{
+		if($course-> id == 9)
+			continue;
+		
 		$timereq = block_addusers_get_course_details($course->id);
 		if($groupid > 0)
 		{

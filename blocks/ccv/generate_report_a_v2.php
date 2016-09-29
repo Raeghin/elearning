@@ -56,6 +56,8 @@ if($courseid > 0)
 	$output .= generate_header(get_string('all_courses', 'block_ccv'), get_string('all_groups', 'block_ccv'), $fromdate, $todate);
 	foreach($courses as $course)
 	{
+		if($course-> id == 9)
+			continue;
 		if($groupid > 0)
 		{
 			$coursegroupid = block_ccv_get_course_group_id($groupname, $course->id);
