@@ -131,7 +131,8 @@ function generate_body($userrecords, $coursename = null, $groupname, $timereq, $
 			
 		if($addtime && $certificate->id > 0)
 		{
-			while($timespent < $timereq->hours_required)
+			
+			while($timespent < $timereq)
 			{
 				$time = $time + 3600;
 				$timespent = utils::format_timespend($time);
