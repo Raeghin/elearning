@@ -238,7 +238,8 @@ $output = '<style type="text/css">
 	
 		if($addtime && $certificate->id > 0)
 		{
-			while(0 < $time && $time < ($timereq->hours_required * 3600))
+				
+			while(($time/3600) < $timereq)
 			{
 				$time = $time + 3600;
 			}
